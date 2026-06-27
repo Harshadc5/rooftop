@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import SignaturePad from "@/components/SignaturePad";
 import GeoCamera from "@/components/GeoCamera";
@@ -8,6 +8,12 @@ export default function EditConsumerForm({ initialData }: { initialData: any }) 
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isLocating, setIsLocating] = useState(false);
+  const [isCanceling, setIsCanceling] = useState(false);
+
+  // Prefetch dashboard in the background so it loads instantly when Cancel is clicked
+  useEffect(() => {
+    router.prefetch("/dashboard");
+  }, [router]);
   
   // General Details State
   const [address, setAddress] = useState(initialData.address || "");
@@ -121,8 +127,17 @@ export default function EditConsumerForm({ initialData }: { initialData: any }) 
         <h1 style={{ fontSize: "32px", fontWeight: "700", textShadow: "0 2px 4px rgba(0,0,0,0.5)", flex: 1 }}>
           Edit Installation: {initialData.consumerName}
         </h1>
-        <button type="button" className="btn-primary" onClick={() => router.push("/dashboard")} style={{ background: "#64748b", border: "none", boxShadow: "none", position: "relative", zIndex: 9999, padding: "14px 28px", flexShrink: 0, cursor: "pointer" }}>
-          Cancel & Back
+        <button 
+          type="button" 
+          className="btn-primary" 
+          disabled={isCanceling}
+          onClick={() => {
+            setIsCanceling(true);
+            router.push("/dashboard");
+          }} 
+          style={{ background: isCanceling ? "#94a3b8" : "#64748b", border: "none", boxShadow: "none", position: "relative", zIndex: 9999, padding: "14px 28px", flexShrink: 0, cursor: isCanceling ? "wait" : "pointer", opacity: isCanceling ? 0.7 : 1 }}
+        >
+          {isCanceling ? "Returning..." : "Cancel & Back"}
         </button>
       </div>
 

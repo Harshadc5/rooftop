@@ -125,16 +125,9 @@ export default function FitterPortal() {
             setState(data.address.state || "");
             setZipCode(data.address.postcode || "");
 
-            // Build a highly precise custom address string
-            const preciseAddressParts = [
-              data.address.house_number,
-              data.address.road,
-              data.address.neighbourhood,
-              data.address.suburb,
-              data.address.city || data.address.town || data.address.village
-            ].filter(Boolean);
-
-            setAddress(preciseAddressParts.length > 0 ? preciseAddressParts.join(", ") : data.display_name || "");
+            // Use the full formatted address provided by OpenStreetMap to get maximum detail
+            // (house number, plot, building, landmark, colony, city, district, state, zip)
+            setAddress(data.display_name || "");
           }
         } catch (err) {
           alert("Failed to get address from coordinates.");
