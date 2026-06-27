@@ -31,10 +31,10 @@ export default function LoginPage() {
   };
 
   return (
-    <div style={{ display: "flex", minHeight: "100vh", background: "#0f172a" }}>
+    <div className="login-wrapper" style={{ display: "flex", minHeight: "100vh", background: "#0f172a" }}>
       
-      {/* LEFT SIDE - BRANDING (Hidden on small screens) */}
-      <div style={{ 
+      {/* TOP/LEFT SIDE - BRANDING */}
+      <div className="login-branding" style={{ 
         flex: 1, 
         position: "relative", 
         display: "flex", 
@@ -45,7 +45,7 @@ export default function LoginPage() {
         backgroundSize: "cover",
         backgroundPosition: "center",
         overflow: "hidden" 
-      }} className="hide-on-mobile">
+      }}>
         {/* Decorative Background Elements */}
         <div style={{ position: "absolute", top: "-10%", left: "-10%", width: "500px", height: "500px", background: "radial-gradient(circle, rgba(245,158,11,0.2) 0%, rgba(245,158,11,0) 70%)", borderRadius: "50%" }}></div>
         <div style={{ position: "absolute", bottom: "-20%", right: "-10%", width: "600px", height: "600px", background: "radial-gradient(circle, rgba(56,189,248,0.15) 0%, rgba(56,189,248,0) 70%)", borderRadius: "50%" }}></div>

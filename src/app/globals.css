@@ -122,6 +122,13 @@ body {
   .hide-on-mobile {
     display: none !important;
   }
+  .login-wrapper {
+    flex-direction: column !important;
+  }
+  .login-branding {
+    padding: 30px !important;
+    min-height: 40vh;
+  }
   .glass-panel {
     padding: 30px !important;
   }
