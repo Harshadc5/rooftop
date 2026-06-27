@@ -15,7 +15,12 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
       return new NextResponse("Geo-tagged photo not found", { status: 404 });
     }
 
-    // Convert Base64 back to binary for native file download
+    // If it's already a public URL (Supabase bucket), redirect directly to it
+    if (consumer.geoTaggedPhotoUrl.startsWith("http")) {
+      return NextResponse.redirect(consumer.geoTaggedPhotoUrl);
+    }
+
+    // Otherwise, convert legacy Base64 back to binary for native file download
     const base64Data = consumer.geoTaggedPhotoUrl.replace(/^data:image\/\w+;base64,/, "");
     const buffer = Buffer.from(base64Data, "base64");
 

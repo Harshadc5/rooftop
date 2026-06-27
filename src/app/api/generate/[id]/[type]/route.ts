@@ -9,6 +9,23 @@ import path from "path";
 
 const prisma = new PrismaClient();
 
+// Helper function to fetch HTTP images into buffers
+async function fetchImageBuffer(url: string | null | undefined): Promise<any> {
+  if (!url) return "";
+  if (url.startsWith("http")) {
+    try {
+      const response = await fetch(url);
+      if (!response.ok) return "";
+      const arrayBuffer = await response.arrayBuffer();
+      return Buffer.from(arrayBuffer);
+    } catch (e) {
+      console.error("Failed to fetch image for document:", e);
+      return "";
+    }
+  }
+  return url; // fallback to returning base64 string
+}
+
 export async function GET(req: Request, { params }: { params: Promise<{ id: string, type: string }> }) {
   try {
     const { id, type } = await params;
@@ -61,8 +78,9 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
     // Image Module Configuration
     const imageOptions = {
       centered: false,
-      getImage: function (tagValue: string, tagName: string) {
+      getImage: function (tagValue: any, tagName: string) {
         if (!tagValue || tagValue === "") return null;
+        if (Buffer.isBuffer(tagValue)) return tagValue;
         try {
           const base64Data = tagValue.replace(/^data:image\/\w+;base64,/, "");
           return Buffer.from(base64Data, "base64");
@@ -99,7 +117,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
       state: (consumer as any).state || "",
       zip_code: (consumer as any).zipCode || "",
       aadhar_number: consumer.aadharNumber,
-      aadhar_photo: consumer.aadharPhotoUrl || "",
+      aadhar_photo: await fetchImageBuffer(consumer.aadharPhotoUrl),
       
       // Installation Details
       category: consumer.category,
@@ -135,8 +153,8 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
       })),
 
       // Signatures (Use the tag names {%consumer_signature} and {%vendor_signature} in Word)
-      consumer_signature: consumer.signatures?.consumerSignature || "",
-      vendor_signature: consumer.signatures?.vendorSignature || ""
+      consumer_signature: await fetchImageBuffer(consumer.signatures?.consumerSignature),
+      vendor_signature: await fetchImageBuffer(consumer.signatures?.vendorSignature)
     };
 
     doc.render(data);
