@@ -117,11 +117,11 @@ export default function EditConsumerForm({ initialData }: { initialData: any }) 
 
   return (
     <div style={{ maxWidth: "1000px", margin: "0 auto", padding: "20px" }}>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "30px" }}>
-        <h1 style={{ fontSize: "32px", fontWeight: "700", textShadow: "0 2px 4px rgba(0,0,0,0.5)" }}>
+      <div className="stack-on-mobile" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "30px", gap: "20px", flexWrap: "wrap" }}>
+        <h1 style={{ fontSize: "32px", fontWeight: "700", textShadow: "0 2px 4px rgba(0,0,0,0.5)", flex: 1 }}>
           Edit Installation: {initialData.consumerName}
         </h1>
-        <button type="button" className="btn-primary" onClick={() => router.push("/dashboard")} style={{ background: "#64748b", border: "none", boxShadow: "none" }}>
+        <button type="button" className="btn-primary" onClick={() => router.push("/dashboard")} style={{ background: "#64748b", border: "none", boxShadow: "none", position: "relative", zIndex: 9999, padding: "14px 28px", flexShrink: 0, cursor: "pointer" }}>
           Cancel & Back
         </button>
       </div>
