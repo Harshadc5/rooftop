@@ -15,16 +15,21 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
       return new NextResponse("Geo-tagged photo not found", { status: 404 });
     }
 
-    // If it's already a public URL (Supabase bucket), redirect directly to it
-    if (consumer.geoTaggedPhotoUrl.startsWith("http")) {
-      return NextResponse.redirect(consumer.geoTaggedPhotoUrl);
-    }
-
-    // Otherwise, convert legacy Base64 back to binary for native file download
-    const base64Data = consumer.geoTaggedPhotoUrl.replace(/^data:image\/\w+;base64,/, "");
-    const buffer = Buffer.from(base64Data, "base64");
-
     const safeName = consumer.consumerName.replace(/[^a-zA-Z0-9]/g, "_");
+
+    let buffer: Buffer;
+    
+    // If it's a public URL (Supabase bucket), fetch it into a buffer so we can force download
+    if (consumer.geoTaggedPhotoUrl.startsWith("http")) {
+      const response = await fetch(consumer.geoTaggedPhotoUrl);
+      if (!response.ok) return new NextResponse("Failed to fetch photo from storage", { status: 500 });
+      const arrayBuffer = await response.arrayBuffer();
+      buffer = Buffer.from(arrayBuffer);
+    } else {
+      // Otherwise, convert legacy Base64 back to binary
+      const base64Data = consumer.geoTaggedPhotoUrl.replace(/^data:image\/\w+;base64,/, "");
+      buffer = Buffer.from(base64Data, "base64");
+    }
 
     return new NextResponse(buffer, {
       headers: {
