@@ -199,11 +199,11 @@ export default function FitterPortal() {
 
   return (
     <div style={{ maxWidth: "1000px", margin: "0 auto", padding: "20px" }}>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "30px" }}>
-        <h1 style={{ fontSize: "32px", fontWeight: "700", textShadow: "0 2px 4px rgba(0,0,0,0.5)" }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "30px", gap: "15px" }}>
+        <h1 style={{ fontSize: "32px", fontWeight: "700", textShadow: "0 2px 4px rgba(0,0,0,0.5)", flex: 1, margin: 0, lineHeight: 1.2 }}>
           New Installation Report
         </h1>
-        <button className="btn-primary" onClick={() => router.push("/")} style={{ background: "#ef4444", border: "none", boxShadow: "none" }}>
+        <button className="btn-primary" onClick={() => router.push("/")} style={{ background: "#ef4444", border: "none", boxShadow: "none", flexShrink: 0, padding: "12px 24px" }}>
           Log Out
         </button>
       </div>
