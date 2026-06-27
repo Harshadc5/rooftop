@@ -345,10 +345,11 @@ export default function FitterPortal() {
                     <div className="stack-on-mobile" style={{ display: "flex", gap: "10px" }}>
                       <button 
                         type="button" 
-                        onClick={() => setScanningModuleIndex(index)}
-                        style={{ padding: "14px", background: "#3b82f6", color: "white", border: "none", borderRadius: "8px", fontWeight: "bold", cursor: "pointer", whiteSpace: "nowrap" }}
+                        onClick={() => setScanningModuleIndex(index)} 
+                        style={{ display: "flex", alignItems: "center", gap: "8px", padding: "10px 15px", background: "white", color: "#0f172a", border: "1px solid #cbd5e1", borderRadius: "8px", cursor: "pointer", fontSize: "14px", fontWeight: "600" }}
                       >
-                        📷 Scan Barcode
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>
+                        Scan Barcode
                       </button>
                       <input type="text" className="input-field" placeholder="ALMM Text" value={mod.almmNumber} onChange={(e) => updateModule(index, "almmNumber", e.target.value)} />
                       <input type="file" accept="image/*" capture="environment" onChange={(e) => handleAlmmImageUpload(index, e)} style={{ width: "100%", maxWidth: "150px", padding: "14px", background: "white", borderRadius: "8px", border: "1px solid #cbd5e1" }} />

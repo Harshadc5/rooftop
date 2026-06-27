@@ -327,8 +327,8 @@ export default function DashboardClient({ initialConsumers }: { initialConsumers
                   <td style={{ padding: "12px 15px", color: "#cbd5e1", fontSize: "14px" }}>
                     {c.moduleCount}
                     {c.modules.some((m: any) => !m.almmNumber && m.almmImageUrl) && (
-                      <span title="Missing ALMM text (photo uploaded)" style={{ marginLeft: "8px", color: "#f59e0b", fontSize: "16px", cursor: "help" }}>
-                        ⚠️
+                      <span title="Missing ALMM text (photo uploaded)" style={{ marginLeft: "8px", color: "#f59e0b", display: "inline-flex", alignItems: "center", cursor: "help" }}>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
                       </span>
                     )}
                   </td>
@@ -340,14 +340,14 @@ export default function DashboardClient({ initialConsumers }: { initialConsumers
                     {c.geoTaggedPhotoUrl && (
                       <a href={`/api/installations/${c.id}/geophoto`} className="btn-primary" style={{ padding: "6px 10px", fontSize: "12px", textDecoration: "none", background: "#ec4899", borderRadius: "4px" }}>GeoPhoto</a>
                     )}
-                    <button onClick={() => setSelectedConsumer(c)} style={{ background: "none", border: "none", cursor: "pointer", fontSize: "18px", padding: "0 4px" }} title="View All Details">
-                      👁️
+                    <button onClick={() => setSelectedConsumer(c)} style={{ background: "none", border: "none", cursor: "pointer", color: "#94a3b8", display: "flex", alignItems: "center", padding: "4px" }} title="View All Details">
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
                     </button>
-                    <button onClick={() => window.location.href = `/dashboard/edit/${c.id}`} style={{ background: "none", border: "none", cursor: "pointer", fontSize: "18px", padding: "0 4px" }} title="Edit Record">
-                      ✏️
+                    <button onClick={() => window.location.href = `/dashboard/edit/${c.id}`} style={{ background: "none", border: "none", cursor: "pointer", color: "#38bdf8", display: "flex", alignItems: "center", padding: "4px" }} title="Edit Record">
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
                     </button>
-                    <button onClick={() => handleDelete(c.id, c.consumerName)} style={{ background: "none", border: "none", cursor: "pointer", fontSize: "18px", padding: "0 4px", color: "#ef4444" }} title="Delete Record">
-                      🗑️
+                    <button onClick={() => handleDelete(c.id, c.consumerName)} style={{ background: "none", border: "none", cursor: "pointer", color: "#ef4444", display: "flex", alignItems: "center", padding: "4px" }} title="Delete Record">
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
                     </button>
                   </td>
                 </tr>

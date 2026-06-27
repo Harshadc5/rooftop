@@ -239,7 +239,7 @@ export default function EditConsumerForm({ initialData }: { initialData: any }) 
                   </div>
                   <div className="form-group" style={{ marginBottom: 0 }}>
                     <label className="form-label" style={{ fontSize: "12px" }}>
-                      ALMM Number {(!mod.almmNumber && mod.almmImageUrl) && <span style={{ color: "#ef4444" }}>(⚠️ Action Required: Read photo and type here)</span>}
+                      ALMM Number {(!mod.almmNumber && mod.almmImageUrl) && <span style={{ color: "#ef4444", display: "inline-flex", alignItems: "center", gap: "4px" }}><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg> Action Required: Read photo and type here</span>}
                     </label>
                     <div className="stack-on-mobile" style={{ display: "flex", gap: "10px", alignItems: "center" }}>
                       <input 
