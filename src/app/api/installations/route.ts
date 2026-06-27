@@ -4,14 +4,14 @@ import { createClient } from "@supabase/supabase-js";
 
 const prisma = new PrismaClient();
 
-// Initialize Supabase Client for Storage Buckets
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "";
-const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "";
-const supabase = createClient(supabaseUrl, supabaseKey);
-
 // Helper function to decode Base64 and upload to Supabase Bucket
 async function uploadBase64ToBucket(base64Str: string | null, path: string): Promise<string | null> {
   if (!base64Str || !base64Str.startsWith('data:image')) return base64Str;
+  
+  // Initialize Supabase Client lazily using the Service Role Key (bypasses RLS for uploads)
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "https://placeholder.supabase.co";
+  const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || "placeholder";
+  const supabase = createClient(supabaseUrl, supabaseKey);
   
   try {
     const matches = base64Str.match(/^data:([A-Za-z-+\/]+);base64,(.+)$/);
