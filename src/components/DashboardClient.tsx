@@ -227,9 +227,10 @@ export default function DashboardClient({ initialConsumers }: { initialConsumers
               </div>
             </div>
             
+            </div>
+            )}
           </div>
-        </div>
-      )}
+        )}
 
       {/* EXISTING TABLE SECTION */}
       <div className="glass-panel animate-fade-in-up stagger-3" style={{ background: "rgba(0, 0, 0, 0.85)", padding: "25px", width: "100%", overflowX: "hidden" }}>
