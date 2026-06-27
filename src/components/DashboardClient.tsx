@@ -80,8 +80,8 @@ export default function DashboardClient({ initialConsumers }: { initialConsumers
       `"${(c.modules || []).map((m: any) => m.almmNumber || m.serialNumber || "").join(", ")}"`,
       `"${c.aadharPhotoUrl && c.aadharPhotoUrl.startsWith('http') ? c.aadharPhotoUrl : "No Link"}"`,
       `"${c.geoTaggedPhotoUrl && c.geoTaggedPhotoUrl.startsWith('http') ? c.geoTaggedPhotoUrl : "No Link"}"`,
-      `"${c.signatures?.[0]?.consumerSignature && c.signatures[0].consumerSignature.startsWith('http') ? c.signatures[0].consumerSignature : "No Link"}"`,
-      `"${c.signatures?.[0]?.vendorSignature && c.signatures[0].vendorSignature.startsWith('http') ? c.signatures[0].vendorSignature : "No Link"}"`
+      `"${c.signatures?.consumerSignature && c.signatures.consumerSignature.startsWith('http') ? c.signatures.consumerSignature : "No Link"}"`,
+      `"${c.signatures?.vendorSignature && c.signatures.vendorSignature.startsWith('http') ? c.signatures.vendorSignature : "No Link"}"`
     ]);
 
     const csvContent = [headers.join(","), ...rows.map(e => e.join(","))].join("\n");
