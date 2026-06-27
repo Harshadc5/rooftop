@@ -37,7 +37,14 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="login-wrapper" style={{ display: "flex", minHeight: "100vh", background: "#0f172a" }}>
+    <div className="login-wrapper" style={{ 
+      display: "flex", 
+      minHeight: "100vh", 
+      background: "linear-gradient(135deg, rgba(15, 23, 42, 0.5) 0%, rgba(15, 23, 42, 0.8) 100%), url('https://images.unsplash.com/photo-1509391366360-2e959784a276?auto=format&fit=crop&q=80&w=1200')",
+      backgroundSize: "cover",
+      backgroundPosition: "center",
+      backgroundAttachment: "fixed"
+    }}>
       
       {/* TOP/LEFT SIDE - BRANDING */}
       <div className="login-branding" style={{ 
@@ -47,9 +54,6 @@ export default function LoginPage() {
         flexDirection: "column", 
         justifyContent: "space-between", 
         padding: "60px", 
-        background: "linear-gradient(135deg, rgba(30, 41, 59, 0.8) 0%, rgba(15, 23, 42, 0.95) 100%), url('https://images.unsplash.com/photo-1509391366360-2e959784a276?auto=format&fit=crop&q=80&w=1200')",
-        backgroundSize: "cover",
-        backgroundPosition: "center",
         overflow: "hidden" 
       }}>
         {/* Decorative Background Elements */}
@@ -97,30 +101,30 @@ export default function LoginPage() {
       </div>
 
       {/* RIGHT SIDE - LOGIN FORM */}
-      <div style={{ flex: 1, display: "flex", justifyContent: "center", alignItems: "center", padding: "40px", background: "white", position: "relative" }}>
+      <div style={{ flex: 1, display: "flex", justifyContent: "center", alignItems: "center", padding: "40px", position: "relative" }}>
         
-        <div className="animate-fade-in-up" style={{ width: "100%", maxWidth: "400px" }}>
+        <div className="glass-panel animate-fade-in-up" style={{ width: "100%", maxWidth: "450px" }}>
           <div style={{ marginBottom: "40px" }}>
-            <h2 style={{ fontSize: "32px", fontWeight: "700", color: "#0f172a", marginBottom: "10px" }}>Welcome Back</h2>
-            <p style={{ color: "#64748b", fontSize: "16px" }}>Please enter your credentials to access the portal.</p>
+            <h2 style={{ fontSize: "32px", fontWeight: "700", color: "white", marginBottom: "10px" }}>Welcome Back</h2>
+            <p style={{ color: "#cbd5e1", fontSize: "16px" }}>Please enter your credentials to access the portal.</p>
           </div>
 
           <form onSubmit={handleLogin}>
             <div className="form-group" style={{ marginBottom: "25px" }}>
-              <label className="form-label" style={{ color: "#334155", fontSize: "14px" }}>Username</label>
+              <label className="form-label" style={{ color: "#f8fafc", fontSize: "14px" }}>Username</label>
               <input 
                 type="text" 
                 className="input-field" 
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 placeholder="e.g. admin or fitter"
-                style={{ background: "#f8fafc", border: "1px solid #e2e8f0", color: "#0f172a", padding: "16px", fontSize: "16px", borderRadius: "12px" }}
+                style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.2)", color: "white", padding: "16px", fontSize: "16px", borderRadius: "12px" }}
                 required 
               />
             </div>
 
             <div className="form-group" style={{ marginBottom: "30px" }}>
-              <label className="form-label" style={{ color: "#334155", fontSize: "14px", display: 'flex', justifyContent: 'space-between' }}>
+              <label className="form-label" style={{ color: "#f8fafc", fontSize: "14px", display: 'flex', justifyContent: 'space-between' }}>
                 <span>Password</span>
                 <span style={{ color: "var(--primary)", cursor: "pointer", fontSize: "13px", fontWeight: "500" }}>Forgot Password?</span>
               </label>
@@ -130,7 +134,7 @@ export default function LoginPage() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
-                style={{ background: "#f8fafc", border: "1px solid #e2e8f0", color: "#0f172a", padding: "16px", fontSize: "16px", borderRadius: "12px" }}
+                style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.2)", color: "white", padding: "16px", fontSize: "16px", borderRadius: "12px" }}
                 required 
               />
             </div>
@@ -147,15 +151,15 @@ export default function LoginPage() {
             </button>
           </form>
           
-          <div style={{ marginTop: "40px", display: "flex", flexDirection: "column", gap: "10px", padding: "20px", background: "#f8fafc", borderRadius: "12px", border: "1px dashed #cbd5e1" }}>
-            <p style={{ fontSize: "12px", fontWeight: "700", color: "#64748b", textTransform: "uppercase", letterSpacing: "1px", margin: 0 }}>Testing Credentials</p>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: "14px", color: "#334155" }}>
+          <div style={{ marginTop: "40px", display: "flex", flexDirection: "column", gap: "10px", padding: "20px", background: "rgba(0,0,0,0.3)", borderRadius: "12px", border: "1px dashed rgba(255,255,255,0.2)" }}>
+            <p style={{ fontSize: "12px", fontWeight: "700", color: "#94a3b8", textTransform: "uppercase", letterSpacing: "1px", margin: 0 }}>Testing Credentials</p>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: "14px", color: "#e2e8f0" }}>
               <span><strong>Admin:</strong> admin / admin</span>
-              <button onClick={() => {setUsername('admin'); setPassword('admin');}} style={{ background: "white", border: "1px solid #e2e8f0", padding: "4px 8px", borderRadius: "6px", fontSize: "12px", cursor: "pointer", color: "#0f172a" }}>Auto-fill</button>
+              <button onClick={() => {setUsername('admin'); setPassword('admin');}} type="button" style={{ background: "rgba(255,255,255,0.1)", border: "1px solid rgba(255,255,255,0.2)", padding: "4px 8px", borderRadius: "6px", fontSize: "12px", cursor: "pointer", color: "white" }}>Auto-fill</button>
             </div>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: "14px", color: "#334155" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: "14px", color: "#e2e8f0" }}>
               <span><strong>Fitter:</strong> fitter / fitter</span>
-              <button onClick={() => {setUsername('fitter'); setPassword('fitter');}} style={{ background: "white", border: "1px solid #e2e8f0", padding: "4px 8px", borderRadius: "6px", fontSize: "12px", cursor: "pointer", color: "#0f172a" }}>Auto-fill</button>
+              <button onClick={() => {setUsername('fitter'); setPassword('fitter');}} type="button" style={{ background: "rgba(255,255,255,0.1)", border: "1px solid rgba(255,255,255,0.2)", padding: "4px 8px", borderRadius: "6px", fontSize: "12px", cursor: "pointer", color: "white" }}>Auto-fill</button>
             </div>
           </div>
         </div>
