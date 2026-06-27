@@ -50,7 +50,8 @@ export async function POST(req: Request) {
         modules: {
           create: data.modules.map((m: any, index: number) => ({
             serialNumber: String(index + 1),
-            almmNumber: m.almmNumber || null
+            almmNumber: m.almmNumber || null,
+            almmImageUrl: m.almmImageUrl || null
           }))
         },
         signatures: {

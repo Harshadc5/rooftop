@@ -3,12 +3,14 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import SignaturePad from "@/components/SignaturePad";
 import GeoCamera from "@/components/GeoCamera";
+import BarcodeScanner from "@/components/BarcodeScanner";
 
 export default function FitterPortal() {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isLocating, setIsLocating] = useState(false);
-  
+  const [scanningModuleIndex, setScanningModuleIndex] = useState<number | null>(null);
+
   // General Details State
   const [address, setAddress] = useState("");
   const [city, setCity] = useState("");
@@ -18,7 +20,7 @@ export default function FitterPortal() {
 
   // Equipment State
   const [moduleCount, setModuleCount] = useState<number | "">("");
-  const [modules, setModules] = useState<{serialNumber: string, almmNumber: string, almmImage: File | null}[]>([]);
+  const [modules, setModules] = useState<{ serialNumber: string, almmNumber: string, almmImageUrl: string | null }[]>([]);
 
   // Signature State
   const [consumerSignature, setConsumerSignature] = useState("");
@@ -61,10 +63,37 @@ export default function FitterPortal() {
     }
   };
 
+  const handleAlmmImageUpload = (index: number, e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const img = new window.Image();
+        img.onload = () => {
+          const canvas = document.createElement("canvas");
+          const MAX_DIM = 800; // Smaller dimension for ALMM stickers to save space
+          let scale = 1;
+          if (img.width > MAX_DIM || img.height > MAX_DIM) {
+            scale = Math.min(MAX_DIM / img.width, MAX_DIM / img.height);
+          }
+          canvas.width = img.width * scale;
+          canvas.height = img.height * scale;
+          const ctx = canvas.getContext("2d");
+          if (ctx) {
+            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+            updateModule(index, "almmImageUrl", canvas.toDataURL("image/jpeg", 0.6));
+          }
+        };
+        img.src = reader.result as string;
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   useEffect(() => {
     if (typeof moduleCount === "number" && moduleCount > 0) {
       const newModules = Array.from({ length: moduleCount }, (_, i) => {
-        return modules[i] || { serialNumber: "", almmNumber: "", almmImage: null };
+        return modules[i] || { serialNumber: "", almmNumber: "", almmImageUrl: null };
       });
       setModules(newModules);
     } else {
@@ -95,16 +124,16 @@ export default function FitterPortal() {
             setDistrict(data.address.state_district || data.address.county || "");
             setState(data.address.state || "");
             setZipCode(data.address.postcode || "");
-            
+
             // Build a highly precise custom address string
             const preciseAddressParts = [
-              data.address.house_number, 
-              data.address.road, 
-              data.address.neighbourhood, 
+              data.address.house_number,
+              data.address.road,
+              data.address.neighbourhood,
               data.address.suburb,
               data.address.city || data.address.town || data.address.village
             ].filter(Boolean);
-            
+
             setAddress(preciseAddressParts.length > 0 ? preciseAddressParts.join(", ") : data.display_name || "");
           }
         } catch (err) {
@@ -128,11 +157,11 @@ export default function FitterPortal() {
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsSubmitting(true);
-    
+
     // Gather all data using FormData
     const formData = new FormData(e.currentTarget);
     const data = Object.fromEntries(formData.entries());
-    
+
     // Add the dynamic modules state to the payload
     const payload = {
       ...data,
@@ -145,7 +174,7 @@ export default function FitterPortal() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
-      
+
       if (response.ok) {
         alert("Installation data saved to database successfully!");
         (e.target as HTMLFormElement).reset(); // Clear form
@@ -155,14 +184,14 @@ export default function FitterPortal() {
         setVendorSignature("");
         setAadharPhoto(null);
         setGeoPhoto("");
-        
+
         // Clear controlled address state fields
         setAddress("");
         setCity("");
         setDistrict("");
         setState("");
         setZipCode("");
-        
+
         setResetKey(prev => prev + 1); // This resets the signature pads
 
       } else {
@@ -171,7 +200,7 @@ export default function FitterPortal() {
     } catch (err) {
       alert("Error saving data.");
     }
-    
+
     setIsSubmitting(false);
   };
 
@@ -186,9 +215,9 @@ export default function FitterPortal() {
         </button>
       </div>
 
-      <form 
-        onSubmit={handleSubmit} 
-        className="glass-panel animate-fade-in-up" 
+      <form
+        onSubmit={handleSubmit}
+        className="glass-panel animate-fade-in-up"
         style={{ padding: "40px" }}
         onWheel={(e) => {
           // Prevent the scroll wheel from changing number input values
@@ -197,7 +226,7 @@ export default function FitterPortal() {
           }
         }}
       >
-        
+
         {/* SECTION 1: Consumer Details */}
         <h2 style={{ fontSize: "22px", color: "var(--primary)", borderBottom: "1px solid var(--glass-border)", paddingBottom: "10px", marginBottom: "20px" }}>
           1. Consumer Details
@@ -278,21 +307,21 @@ export default function FitterPortal() {
           <div className="form-group"><label className="form-label">Inverter Capacity (KW)</label><input type="number" step="0.1" name="inverterCapacity" className="input-field" required /></div>
           <div className="form-group"><label className="form-label">SolarPV Details - Inverter Capacity</label><input type="text" name="capacityOfInverter" className="input-field" placeholder="e.g. 5 KW" /></div>
           <div className="form-group"><label className="form-label">Inverter Year of Manufacture</label><input type="number" min="2000" max="2100" name="inverterYom" className="input-field" required /></div>
-          
+
           <div className="form-group"><label className="form-label">Module Make</label><input type="text" name="moduleMake" className="input-field" required /></div>
           <div className="form-group"><label className="form-label">Wattage per Module (W)</label><input type="number" name="moduleCapacity" className="input-field" required /></div>
           <div className="form-group"><label className="form-label">SolarPV Details - Module Capacity (KW)</label><input type="text" name="moduleCapacityKw" className="input-field" placeholder="e.g. 3240 w" /></div>
           <div className="form-group"><label className="form-label">Cell Manufacturer's Name</label><input type="text" name="cellManufacturer" className="input-field" required /></div>
           <div className="form-group">
             <label className="form-label" style={{ color: "var(--primary)" }}>Number of Modules (Panels)</label>
-            <input 
-              type="number" 
+            <input
+              type="number"
               name="moduleCount"
-              min="1" 
-              className="input-field" 
+              min="1"
+              className="input-field"
               value={moduleCount}
               onChange={(e) => setModuleCount(e.target.value ? parseInt(e.target.value) : "")}
-              required 
+              required
             />
           </div>
         </div>
@@ -303,7 +332,7 @@ export default function FitterPortal() {
             <h3 style={{ fontSize: "18px", fontWeight: "600", marginBottom: "15px", color: "white" }}>
               Panel Details ({modules.length} Panels)
             </h3>
-            
+
             {modules.map((mod, index) => (
               <div key={index} style={{ background: "rgba(255,255,255,0.05)", padding: "15px", borderRadius: "8px", marginBottom: "15px", border: "1px solid rgba(255,255,255,0.1)" }}>
                 <div className="stack-on-mobile" style={{ display: "grid", gridTemplateColumns: "70px 1fr", gap: "15px", alignItems: "end" }}>
@@ -314,8 +343,22 @@ export default function FitterPortal() {
                   <div className="form-group" style={{ marginBottom: 0 }}>
                     <label className="form-label" style={{ fontSize: "12px" }}>ALMM Number (Or upload photo)</label>
                     <div className="stack-on-mobile" style={{ display: "flex", gap: "10px" }}>
+                      <button 
+                        type="button" 
+                        onClick={() => setScanningModuleIndex(index)}
+                        style={{ padding: "14px", background: "#3b82f6", color: "white", border: "none", borderRadius: "8px", fontWeight: "bold", cursor: "pointer", whiteSpace: "nowrap" }}
+                      >
+                        📷 Scan Barcode
+                      </button>
                       <input type="text" className="input-field" placeholder="ALMM Text" value={mod.almmNumber} onChange={(e) => updateModule(index, "almmNumber", e.target.value)} />
-                      <input type="file" accept="image/*" capture="environment" onChange={(e) => updateModule(index, "almmImage", e.target.files?.[0] || null)} style={{ width: "100%", maxWidth: "150px", padding: "14px", background: "white", borderRadius: "8px", border: "1px solid #cbd5e1" }} />
+                      <input type="file" accept="image/*" capture="environment" onChange={(e) => handleAlmmImageUpload(index, e)} style={{ width: "100%", maxWidth: "150px", padding: "14px", background: "white", borderRadius: "8px", border: "1px solid #cbd5e1" }} />
+                      
+                      {/* Show thumbnail if uploaded */}
+                      {mod.almmImageUrl && (
+                        <div style={{ width: "45px", height: "45px", borderRadius: "8px", overflow: "hidden", border: "1px solid #cbd5e1", flexShrink: 0 }}>
+                          <img src={mod.almmImageUrl} alt="ALMM" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -349,6 +392,17 @@ export default function FitterPortal() {
           {isSubmitting ? "Saving Installation Data..." : "Submit Installation Report"}
         </button>
       </form>
+
+      {/* Barcode Scanner Modal */}
+      {scanningModuleIndex !== null && (
+        <BarcodeScanner 
+          onScan={(text) => {
+            updateModule(scanningModuleIndex, "almmNumber", text);
+            setScanningModuleIndex(null);
+          }}
+          onClose={() => setScanningModuleIndex(null)}
+        />
+      )}
     </div>
   );
 }
