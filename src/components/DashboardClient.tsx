@@ -45,6 +45,51 @@ export default function DashboardClient({ initialConsumers }: { initialConsumers
     }
   };
 
+  const exportToCSV = () => {
+    const headers = [
+      "S.No.", "Consumer Name", "Mobile Number", "Email", "Application Date", 
+      "Installation Date", "Consumer Number", "Address", "City", "District", 
+      "State", "Zip Code", "Category", "Sanction Number", "Capacity (KW)", 
+      "Inverter Make", "Inverter Model", "Inverter Capacity (KW)", "Module Make", 
+      "Module Capacity", "Module Count", "Panel Serial/ALMM Numbers"
+    ];
+    
+    const rows = filteredConsumers.map((c, idx) => [
+      idx + 1,
+      `"${c.consumerName || ""}"`,
+      `"${c.mobileNumber || ""}"`,
+      `"${c.email || ""}"`,
+      `"${c.dateOfApplication || ""}"`,
+      `"${c.installationDate || ""}"`,
+      `"${c.consumerNumber || ""}"`,
+      `"${c.address || ""}"`,
+      `"${c.city || ""}"`,
+      `"${c.district || ""}"`,
+      `"${c.state || ""}"`,
+      `"${c.zipCode || ""}"`,
+      `"${c.category || ""}"`,
+      `"${c.sanctionNumber || ""}"`,
+      `"${c.capacity || ""}"`,
+      `"${c.inverterMake || ""}"`,
+      `"${c.inverterModel || ""}"`,
+      `"${c.inverterCapacity || ""}"`,
+      `"${c.moduleMake || ""}"`,
+      `"${c.moduleCapacity || ""}"`,
+      `"${c.moduleCount || ""}"`,
+      `"${(c.modules || []).map((m: any) => m.almmNumber || m.serialNumber || "").join(", ")}"`
+    ]);
+
+    const csvContent = [headers.join(","), ...rows.map(e => e.join(","))].join("\n");
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.setAttribute("href", url);
+    link.setAttribute("download", `Consumer_Installations_Export_${new Date().toISOString().slice(0,10)}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   const handleBulkDelete = async () => {
     if (window.confirm(`Are you sure you want to permanently delete ${selectedIds.size} records?`)) {
       try {
@@ -211,6 +256,14 @@ export default function DashboardClient({ initialConsumers }: { initialConsumers
               Delete Selected ({selectedIds.size})
             </button>
           )}
+
+          <button 
+            onClick={exportToCSV}
+            style={{ padding: "8px 15px", borderRadius: "8px", border: "none", background: "#10b981", color: "white", cursor: "pointer", fontWeight: "600", display: "flex", alignItems: "center", gap: "6px" }}
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+            Export to CSV
+          </button>
         </div>
         
         <input 
