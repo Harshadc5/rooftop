@@ -1,65 +1,160 @@
-import Image from "next/image";
+"use client";
+import { signIn } from "next-auth/react";
+import { useState } from "react";
+import { useRouter } from "next/navigation";
 
-export default function Home() {
+export default function LoginPage() {
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const router = useRouter();
+
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError("");
+    setIsLoading(true);
+    
+    const res = await signIn("credentials", {
+      username,
+      password,
+      redirect: false,
+    });
+
+    if (res?.error) {
+      setError("Invalid credentials. Please try again.");
+      setIsLoading(false);
+    } else {
+      if (username === "admin") router.push("/dashboard");
+      else router.push("/fitter");
+    }
+  };
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
+    <div style={{ display: "flex", minHeight: "100vh", background: "#0f172a" }}>
+      
+      {/* LEFT SIDE - BRANDING (Hidden on small screens) */}
+      <div style={{ 
+        flex: 1, 
+        position: "relative", 
+        display: "flex", 
+        flexDirection: "column", 
+        justifyContent: "space-between", 
+        padding: "60px", 
+        background: "linear-gradient(135deg, rgba(30, 41, 59, 0.8) 0%, rgba(15, 23, 42, 0.95) 100%), url('https://images.unsplash.com/photo-1509391366360-2e959784a276?auto=format&fit=crop&q=80&w=1200')",
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+        overflow: "hidden" 
+      }} className="hide-on-mobile">
+        {/* Decorative Background Elements */}
+        <div style={{ position: "absolute", top: "-10%", left: "-10%", width: "500px", height: "500px", background: "radial-gradient(circle, rgba(245,158,11,0.2) 0%, rgba(245,158,11,0) 70%)", borderRadius: "50%" }}></div>
+        <div style={{ position: "absolute", bottom: "-20%", right: "-10%", width: "600px", height: "600px", background: "radial-gradient(circle, rgba(56,189,248,0.15) 0%, rgba(56,189,248,0) 70%)", borderRadius: "50%" }}></div>
+        
+        <div style={{ position: "relative", zIndex: 10 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "15px", marginBottom: "40px" }}>
+            <div style={{ background: "linear-gradient(135deg, var(--primary), #ea580c)", padding: "12px", borderRadius: "12px", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 4px 20px rgba(245,158,11,0.4)" }}>
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="12" cy="12" r="5"></circle>
+                <line x1="12" y1="1" x2="12" y2="3"></line>
+                <line x1="12" y1="21" x2="12" y2="23"></line>
+                <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                <line x1="1" y1="12" x2="3" y2="12"></line>
+                <line x1="21" y1="12" x2="23" y2="12"></line>
+                <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+              </svg>
+            </div>
+            <h1 style={{ fontSize: "24px", fontWeight: "800", color: "white", letterSpacing: "1px" }}>MITALI ENTERPRISES <span style={{fontWeight: "400", opacity: 0.7}}>| SolarConnect</span></h1>
+          </div>
+          
+          <h2 style={{ fontSize: "48px", fontWeight: "700", color: "white", lineHeight: "1.1", marginBottom: "20px", maxWidth: "500px" }}>
+            Powering the Future of <span style={{ color: "var(--primary)" }}>Rooftop Solar</span>
+          </h2>
+          <p style={{ fontSize: "18px", color: "#94a3b8", lineHeight: "1.6", maxWidth: "450px" }}>
+            The ultimate enterprise platform for fitters and admins to seamlessly manage solar installations, track assets, and automatically generate government compliance documents.
           </p>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+
+        <div style={{ position: "relative", zIndex: 10 }}>
+          <div style={{ display: "flex", gap: "20px" }}>
+            <div style={{ background: "rgba(255,255,255,0.05)", padding: "20px", borderRadius: "16px", border: "1px solid rgba(255,255,255,0.1)" }}>
+              <div style={{ fontSize: "24px", fontWeight: "700", color: "white", marginBottom: "5px" }}>100%</div>
+              <div style={{ fontSize: "14px", color: "#94a3b8" }}>Paperless Workflow</div>
+            </div>
+            <div style={{ background: "rgba(255,255,255,0.05)", padding: "20px", borderRadius: "16px", border: "1px solid rgba(255,255,255,0.1)" }}>
+              <div style={{ fontSize: "24px", fontWeight: "700", color: "white", marginBottom: "5px" }}>Instant</div>
+              <div style={{ fontSize: "14px", color: "#94a3b8" }}>Docxtemplater Exports</div>
+            </div>
+          </div>
         </div>
-      </main>
+      </div>
+
+      {/* RIGHT SIDE - LOGIN FORM */}
+      <div style={{ flex: 1, display: "flex", justifyContent: "center", alignItems: "center", padding: "40px", background: "white", position: "relative" }}>
+        
+        <div className="animate-fade-in-up" style={{ width: "100%", maxWidth: "400px" }}>
+          <div style={{ marginBottom: "40px" }}>
+            <h2 style={{ fontSize: "32px", fontWeight: "700", color: "#0f172a", marginBottom: "10px" }}>Welcome Back</h2>
+            <p style={{ color: "#64748b", fontSize: "16px" }}>Please enter your credentials to access the portal.</p>
+          </div>
+
+          <form onSubmit={handleLogin}>
+            <div className="form-group" style={{ marginBottom: "25px" }}>
+              <label className="form-label" style={{ color: "#334155", fontSize: "14px" }}>Username</label>
+              <input 
+                type="text" 
+                className="input-field" 
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                placeholder="e.g. admin or fitter"
+                style={{ background: "#f8fafc", border: "1px solid #e2e8f0", color: "#0f172a", padding: "16px", fontSize: "16px", borderRadius: "12px" }}
+                required 
+              />
+            </div>
+
+            <div className="form-group" style={{ marginBottom: "30px" }}>
+              <label className="form-label" style={{ color: "#334155", fontSize: "14px", display: 'flex', justifyContent: 'space-between' }}>
+                <span>Password</span>
+                <span style={{ color: "var(--primary)", cursor: "pointer", fontSize: "13px", fontWeight: "500" }}>Forgot Password?</span>
+              </label>
+              <input 
+                type="password" 
+                className="input-field" 
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="••••••••"
+                style={{ background: "#f8fafc", border: "1px solid #e2e8f0", color: "#0f172a", padding: "16px", fontSize: "16px", borderRadius: "12px" }}
+                required 
+              />
+            </div>
+
+            {error && (
+              <div style={{ background: "#fef2f2", border: "1px solid #fecaca", padding: "12px", borderRadius: "8px", marginBottom: "20px", color: "#ef4444", fontSize: "14px", textAlign: "center", display: "flex", alignItems: "center", justifyContent: "center", gap: "8px" }}>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+                {error}
+              </div>
+            )}
+
+            <button type="submit" className="btn-primary" style={{ width: "100%", padding: "16px", fontSize: "16px", borderRadius: "12px", boxShadow: "0 10px 25px rgba(245,158,11,0.25)" }} disabled={isLoading}>
+              {isLoading ? "Authenticating securely..." : "Sign In securely"}
+            </button>
+          </form>
+          
+          <div style={{ marginTop: "40px", display: "flex", flexDirection: "column", gap: "10px", padding: "20px", background: "#f8fafc", borderRadius: "12px", border: "1px dashed #cbd5e1" }}>
+            <p style={{ fontSize: "12px", fontWeight: "700", color: "#64748b", textTransform: "uppercase", letterSpacing: "1px", margin: 0 }}>Testing Credentials</p>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: "14px", color: "#334155" }}>
+              <span><strong>Admin:</strong> admin / admin</span>
+              <button onClick={() => {setUsername('admin'); setPassword('admin');}} style={{ background: "white", border: "1px solid #e2e8f0", padding: "4px 8px", borderRadius: "6px", fontSize: "12px", cursor: "pointer", color: "#0f172a" }}>Auto-fill</button>
+            </div>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: "14px", color: "#334155" }}>
+              <span><strong>Fitter:</strong> fitter / fitter</span>
+              <button onClick={() => {setUsername('fitter'); setPassword('fitter');}} style={{ background: "white", border: "1px solid #e2e8f0", padding: "4px 8px", borderRadius: "6px", fontSize: "12px", cursor: "pointer", color: "#0f172a" }}>Auto-fill</button>
+            </div>
+          </div>
+        </div>
+        
+      </div>
     </div>
   );
 }

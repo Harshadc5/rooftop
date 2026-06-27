@@ -1,0 +1,88 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model User {
+  id       String @id @default(uuid())
+  email    String @unique
+  password String
+  name     String
+  role     String @default("FITTER") // ADMIN or FITTER
+}
+
+model Consumer {
+  id              String         @id @default(uuid())
+  fitterId        String
+  createdAt       DateTime       @default(now())
+  
+  // General Details
+  consumerName    String
+  consumerNumber  String
+  mobileNumber    String
+  email           String?
+  address         String
+  city            String
+  district        String
+  aadharNumber    String
+  aadharPhotoUrl  String?
+  geoTaggedPhotoUrl String?
+
+  // Installation Details
+  category              String
+  sanctionNumber        String
+  sanctionedCapacity    String
+  capacity              String
+  totalCapacity         String?
+  applicationNumber     String
+  dateOfApplication     String
+  installationDate      String
+  reSource              String
+  projectModel          String
+  agreementDate         String
+  location              String
+  earthingsDetails      String?
+  state                 String?
+  zipCode               String?
+
+  // Equipment Details
+  inverterMake          String
+  inverterModel         String
+  inverterCapacity      Float
+  capacityOfInverter    String?
+  inverterYom           Int
+  
+  moduleMake            String
+  moduleCapacity        Float
+  moduleCapacityKw      String?
+  moduleCount           Int
+  cellManufacturer      String
+
+  // Relations
+  modules               ModuleSerial[]
+  signatures            Signature?
+}
+
+model ModuleSerial {
+  id            String   @id @default(uuid())
+  consumerId    String
+  serialNumber  String
+  almmNumber    String?
+  almmImageUrl  String?  // Fallback if OCR fails
+  
+  consumer      Consumer @relation(fields: [consumerId], references: [id], onDelete: Cascade)
+}
+
+model Signature {
+  id                  String   @id @default(uuid())
+  consumerId          String   @unique
+  consumerSignature   String?  // Data URL for signature pad
+  vendorSignature     String?  // Data URL for signature pad
+  
+  consumer            Consumer @relation(fields: [consumerId], references: [id], onDelete: Cascade)
+}
