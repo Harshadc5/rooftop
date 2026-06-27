@@ -225,10 +225,10 @@ export default function FitterPortal() {
           1. Consumer Details
         </h2>
         <div className="responsive-grid-2" style={{ marginBottom: "40px" }}>
-          <div className="form-group"><label className="form-label">Consumer Name</label><input type="text" name="consumerName" className="input-field" pattern="[a-zA-Z\s]+" title="Only letters and spaces allowed" required /></div>
-          <div className="form-group"><label className="form-label">Mobile Number</label><input type="tel" name="mobileNumber" className="input-field" pattern="\d{10}" title="Must be exactly 10 digits" maxLength={10} required /></div>
-          <div className="form-group"><label className="form-label">Email</label><input type="email" name="email" className="input-field" placeholder="example@email.com" /></div>
-          <div className="form-group"><label className="form-label">Consumer Number</label><input type="text" name="consumerNumber" className="input-field" required /></div>
+          <div className="form-group"><label className="form-label">Consumer Name</label><input type="text" name="consumerName" className="input-field" pattern="[a-zA-Z\s]+" title="Only letters and spaces allowed" placeholder="RAJNIKANT RAMESH MORE" required /></div>
+          <div className="form-group"><label className="form-label">Mobile Number</label><input type="tel" name="mobileNumber" className="input-field" pattern="\d{10}" title="Must be exactly 10 digits" maxLength={10} placeholder="8625962552" required /></div>
+          <div className="form-group"><label className="form-label">Email</label><input type="email" name="email" className="input-field" placeholder="rajnikantmore@gmail.com" /></div>
+          <div className="form-group"><label className="form-label">Consumer Number</label><input type="text" name="consumerNumber" className="input-field" placeholder="065524127941" required /></div>
 
           <div className="form-group" style={{ gridColumn: "1 / -1" }}>
             <label className="form-label" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -250,14 +250,14 @@ export default function FitterPortal() {
           </div>
 
           <div className="form-group" style={{ gridColumn: "1 / -1", marginTop: "-10px" }}>
-            <label className="form-label">Complete Address</label><input type="text" name="address" className="input-field" value={address} onChange={e => setAddress(e.target.value)} required />
+            <label className="form-label">Complete Address</label><input type="text" name="address" className="input-field" value={address} onChange={e => setAddress(e.target.value)} placeholder="House/Plot No, Landmark, Area" required />
           </div>
-          <div className="form-group"><label className="form-label">City</label><input type="text" name="city" className="input-field" value={city} onChange={e => setCity(e.target.value)} required /></div>
-          <div className="form-group"><label className="form-label">District</label><input type="text" name="district" className="input-field" value={district} onChange={e => setDistrict(e.target.value)} required /></div>
-          <div className="form-group"><label className="form-label">State</label><input type="text" name="state" className="input-field" value={state} onChange={e => setState(e.target.value)} /></div>
-          <div className="form-group"><label className="form-label">Postal Zip Code</label><input type="text" name="zipCode" className="input-field" value={zipCode} onChange={e => setZipCode(e.target.value)} /></div>
+          <div className="form-group"><label className="form-label">City</label><input type="text" name="city" className="input-field" value={city} onChange={e => setCity(e.target.value)} placeholder="Malegaon" required /></div>
+          <div className="form-group"><label className="form-label">District</label><input type="text" name="district" className="input-field" value={district} onChange={e => setDistrict(e.target.value)} placeholder="Nashik" required /></div>
+          <div className="form-group"><label className="form-label">State</label><input type="text" name="state" className="input-field" value={state} onChange={e => setState(e.target.value)} placeholder="Maharashtra" /></div>
+          <div className="form-group"><label className="form-label">Postal Zip Code</label><input type="text" name="zipCode" className="input-field" value={zipCode} onChange={e => setZipCode(e.target.value)} placeholder="423203" /></div>
 
-          <div className="form-group"><label className="form-label">Aadhar Number (12 digits)</label><input type="text" name="aadharNumber" className="input-field" pattern="\d{12}" maxLength={12} title="Must be exactly 12 digits" required /></div>
+          <div className="form-group"><label className="form-label">Aadhar Number (12 digits)</label><input type="text" name="aadharNumber" className="input-field" pattern="\d{12}" maxLength={12} title="Must be exactly 12 digits" placeholder="432084801502" required /></div>
           <div className="form-group">
             <label className="form-label">Aadhar Card Photo</label>
             <input type="file" onChange={handleAadharUpload} className="input-field" style={{ padding: "12px", background: "white" }} accept="image/*" capture="environment" />
@@ -278,16 +278,16 @@ export default function FitterPortal() {
               <option value="Government">Government</option>
             </select>
           </div>
-          <div className="form-group"><label className="form-label">Sanction Number</label><input type="text" name="sanctionNumber" className="input-field" required /></div>
-          <div className="form-group"><label className="form-label">Sanctioned Capacity (KW)</label><input type="number" step="0.1" name="sanctionedCapacity" className="input-field" required /></div>
-          <div className="form-group"><label className="form-label">Capacity of solar PV system (KW)</label><input type="number" step="0.1" name="capacity" className="input-field" required /></div>
+          <div className="form-group"><label className="form-label">Sanction Number</label><input type="text" name="sanctionNumber" className="input-field" placeholder="0485 / NP-MHSED25-8184107" required /></div>
+          <div className="form-group"><label className="form-label">Sanctioned Capacity (KW)</label><input type="number" step="0.1" name="sanctionedCapacity" className="input-field" placeholder="3.00" required /></div>
+          <div className="form-group"><label className="form-label">Capacity of solar PV system (KW)</label><input type="number" step="0.1" name="capacity" className="input-field" placeholder="3.00" required /></div>
           <div className="form-group"><label className="form-label">Total Capacity (KWP)</label><input type="text" name="totalCapacity" placeholder="3.270 kw" className="input-field" required /></div>
-          <div className="form-group"><label className="form-label">Application Number</label><input type="text" name="applicationNumber" className="input-field" required /></div>
+          <div className="form-group"><label className="form-label">Application Number</label><input type="text" name="applicationNumber" className="input-field" placeholder="79430816" required /></div>
           <div className="form-group"><label className="form-label">Date of Application</label><input type="date" name="dateOfApplication" className="input-field" required /></div>
           <div className="form-group"><label className="form-label">Installation Date</label><input type="date" name="installationDate" className="input-field" required /></div>
           <div className="form-group"><label className="form-label">Net Metering Agreement Date</label><input type="date" name="agreementDate" className="input-field" /></div>
-          <div className="form-group"><label className="form-label">Project Model</label><input type="text" name="projectModel" className="input-field" required /></div>
-          <div className="form-group"><label className="form-label">Earthings Details</label><input type="text" name="earthingsDetails" className="input-field" /></div>
+          <div className="form-group"><label className="form-label">Project Model</label><input type="text" name="projectModel" className="input-field" placeholder="CAPEX" required /></div>
+          <div className="form-group"><label className="form-label">Earthings Details</label><input type="text" name="earthingsDetails" className="input-field" placeholder="03" /></div>
         </div>
 
         {/* SECTION 3: Equipment */}
@@ -295,16 +295,16 @@ export default function FitterPortal() {
           3. Equipment Details
         </h2>
         <div className="responsive-grid-2" style={{ marginBottom: "20px" }}>
-          <div className="form-group"><label className="form-label">Inverter Make</label><input type="text" name="inverterMake" className="input-field" required /></div>
-          <div className="form-group"><label className="form-label">Inverter Model</label><input type="text" name="inverterModel" className="input-field" required /></div>
-          <div className="form-group"><label className="form-label">Inverter Capacity (KW)</label><input type="number" step="0.1" name="inverterCapacity" className="input-field" required /></div>
-          <div className="form-group"><label className="form-label">SolarPV Details - Inverter Capacity</label><input type="text" name="capacityOfInverter" className="input-field" placeholder="e.g. 5 KW" /></div>
-          <div className="form-group"><label className="form-label">Inverter Year of Manufacture</label><input type="number" min="2000" max="2100" name="inverterYom" className="input-field" required /></div>
+          <div className="form-group"><label className="form-label">Inverter Make</label><input type="text" name="inverterMake" className="input-field" placeholder="Warry" required /></div>
+          <div className="form-group"><label className="form-label">Inverter Model</label><input type="text" name="inverterModel" className="input-field" placeholder="3K6020226/ 2550-597803694P" required /></div>
+          <div className="form-group"><label className="form-label">Inverter Capacity (KW)</label><input type="number" step="0.1" name="inverterCapacity" className="input-field" placeholder="5" required /></div>
+          <div className="form-group"><label className="form-label">SolarPV Details - Inverter Capacity</label><input type="text" name="capacityOfInverter" className="input-field" placeholder="3" /></div>
+          <div className="form-group"><label className="form-label">Inverter Year of Manufacture</label><input type="number" min="2000" max="2100" name="inverterYom" className="input-field" placeholder="2026" required /></div>
 
-          <div className="form-group"><label className="form-label">Module Make</label><input type="text" name="moduleMake" className="input-field" required /></div>
-          <div className="form-group"><label className="form-label">Wattage per Module (W)</label><input type="number" name="moduleCapacity" className="input-field" required /></div>
-          <div className="form-group"><label className="form-label">SolarPV Details - Module Capacity (KW)</label><input type="text" name="moduleCapacityKw" className="input-field" placeholder="e.g. 3240 w" /></div>
-          <div className="form-group"><label className="form-label">Cell Manufacturer's Name</label><input type="text" name="cellManufacturer" className="input-field" required /></div>
+          <div className="form-group"><label className="form-label">Module Make</label><input type="text" name="moduleMake" className="input-field" placeholder="Warry" required /></div>
+          <div className="form-group"><label className="form-label">Wattage per Module (W)</label><input type="number" name="moduleCapacity" className="input-field" placeholder="580" required /></div>
+          <div className="form-group"><label className="form-label">SolarPV Details - Module Capacity (KW)</label><input type="text" name="moduleCapacityKw" className="input-field" placeholder="3240" /></div>
+          <div className="form-group"><label className="form-label">Cell Manufacturer's Name</label><input type="text" name="cellManufacturer" className="input-field" placeholder="WARRY PVT.LTD" required /></div>
           <div className="form-group">
             <label className="form-label" style={{ color: "var(--primary)" }}>Number of Modules (Panels)</label>
             <input
@@ -339,7 +339,7 @@ export default function FitterPortal() {
                       <button 
                         type="button" 
                         onClick={() => setScanningModuleIndex(index)} 
-                        style={{ display: "flex", alignItems: "center", gap: "8px", padding: "10px 15px", background: "white", color: "#0f172a", border: "1px solid #cbd5e1", borderRadius: "8px", cursor: "pointer", fontSize: "14px", fontWeight: "600" }}
+                        style={{ display: "flex", alignItems: "center", gap: "8px", padding: "14px 20px", background: "#3b82f6", color: "white", border: "none", borderRadius: "8px", cursor: "pointer", fontSize: "14px", fontWeight: "bold", whiteSpace: "nowrap" }}
                       >
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>
                         Scan Barcode
