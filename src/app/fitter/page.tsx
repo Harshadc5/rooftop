@@ -210,7 +210,7 @@ export default function FitterPortal() {
         <h1 style={{ fontSize: "32px", fontWeight: "700", textShadow: "0 2px 4px rgba(0,0,0,0.5)" }}>
           New Installation Report
         </h1>
-        <button className="btn-primary" onClick={() => router.push("/")} style={{ background: "rgba(255,255,255,0.1)" }}>
+        <button className="btn-primary" onClick={() => router.push("/")} style={{ background: "rgba(0,0,0,0.6)", border: "1px solid rgba(255,255,255,0.2)" }}>
           Log Out
         </button>
       </div>

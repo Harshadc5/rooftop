@@ -18,7 +18,7 @@ export default async function DashboardPage() {
         <h1 style={{ fontSize: "32px", fontWeight: "700", textShadow: "0 2px 4px rgba(0,0,0,0.5)", margin: 0 }}>
           Admin Dashboard
         </h1>
-        <a href="/" className="btn-primary" style={{ textDecoration: 'none', background: "rgba(255,255,255,0.1)", textAlign: "center" }}>
+        <a href="/" className="btn-primary" style={{ textDecoration: 'none', background: "rgba(0,0,0,0.6)", border: "1px solid rgba(255,255,255,0.2)", textAlign: "center" }}>
           Log Out
         </a>
       </div>
