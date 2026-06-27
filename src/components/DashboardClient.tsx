@@ -469,19 +469,19 @@ export default function DashboardClient({ initialConsumers }: { initialConsumers
               </div>
 
               <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
-                {selectedConsumer.signatures?.[0]?.consumerSignature ? (
+                {selectedConsumer.signatures?.consumerSignature ? (
                   <div style={{ background: "white", padding: "15px", borderRadius: "12px" }}>
                     <h4 style={{ color: "#0f172a", marginBottom: "10px", fontSize: "14px" }}>Consumer Signature</h4>
-                    <img src={selectedConsumer.signatures[0].consumerSignature} alt="Consumer Sig" style={{ width: "100%", maxHeight: "100px", objectFit: "contain" }} />
+                    <img src={selectedConsumer.signatures.consumerSignature} alt="Consumer Sig" style={{ width: "100%", maxHeight: "100px", objectFit: "contain" }} />
                   </div>
                 ) : (
                   <div style={{ background: "rgba(255,255,255,0.05)", padding: "15px", borderRadius: "12px", border: "1px solid rgba(255,255,255,0.1)", color: "#ef4444" }}>No Consumer Signature</div>
                 )}
 
-                {selectedConsumer.signatures?.[0]?.vendorSignature ? (
+                {selectedConsumer.signatures?.vendorSignature ? (
                   <div style={{ background: "white", padding: "15px", borderRadius: "12px" }}>
                     <h4 style={{ color: "#0f172a", marginBottom: "10px", fontSize: "14px" }}>Vendor/Installer Signature</h4>
-                    <img src={selectedConsumer.signatures[0].vendorSignature} alt="Vendor Sig" style={{ width: "100%", maxHeight: "100px", objectFit: "contain" }} />
+                    <img src={selectedConsumer.signatures.vendorSignature} alt="Vendor Sig" style={{ width: "100%", maxHeight: "100px", objectFit: "contain" }} />
                   </div>
                 ) : (
                   <div style={{ background: "rgba(255,255,255,0.05)", padding: "15px", borderRadius: "12px", border: "1px solid rgba(255,255,255,0.1)", color: "#ef4444" }}>No Vendor Signature</div>
