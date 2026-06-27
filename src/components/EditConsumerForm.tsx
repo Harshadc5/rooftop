@@ -121,7 +121,7 @@ export default function EditConsumerForm({ initialData }: { initialData: any }) 
         <h1 style={{ fontSize: "32px", fontWeight: "700", textShadow: "0 2px 4px rgba(0,0,0,0.5)" }}>
           Edit Installation: {initialData.consumerName}
         </h1>
-        <button className="btn-primary" onClick={() => router.push("/dashboard")} style={{ background: "rgba(255,255,255,0.1)" }}>
+        <button type="button" className="btn-primary" onClick={() => router.push("/dashboard")} style={{ background: "#64748b", border: "none", boxShadow: "none" }}>
           Cancel & Back
         </button>
       </div>
