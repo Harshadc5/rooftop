@@ -31,7 +31,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
       buffer = Buffer.from(base64Data, "base64");
     }
 
-    return new NextResponse(buffer, {
+    return new NextResponse(buffer as any, {
       headers: {
         "Content-Type": "image/jpeg",
         "Content-Disposition": `attachment; filename="${safeName}_GeoPhoto.jpg"`,
