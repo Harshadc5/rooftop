@@ -51,7 +51,8 @@ export default function DashboardClient({ initialConsumers }: { initialConsumers
       "Installation Date", "Consumer Number", "Address", "City", "District", 
       "State", "Zip Code", "Category", "Sanction Number", "Capacity (KW)", 
       "Inverter Make", "Inverter Model", "Inverter Capacity (KW)", "Module Make", 
-      "Module Capacity", "Module Count", "Panel Serial/ALMM Numbers"
+      "Module Capacity", "Module Count", "Panel Serial/ALMM Numbers",
+      "Aadhar Photo URL", "Geo-Photo URL", "Consumer Signature URL", "Vendor Signature URL"
     ];
     
     const rows = filteredConsumers.map((c, idx) => [
@@ -76,7 +77,11 @@ export default function DashboardClient({ initialConsumers }: { initialConsumers
       `"${c.moduleMake || ""}"`,
       `"${c.moduleCapacity || ""}"`,
       `"${c.moduleCount || ""}"`,
-      `"${(c.modules || []).map((m: any) => m.almmNumber || m.serialNumber || "").join(", ")}"`
+      `"${(c.modules || []).map((m: any) => m.almmNumber || m.serialNumber || "").join(", ")}"`,
+      `"${c.aadharPhotoUrl && c.aadharPhotoUrl.startsWith('http') ? c.aadharPhotoUrl : "No Link"}"`,
+      `"${c.geoTaggedPhotoUrl && c.geoTaggedPhotoUrl.startsWith('http') ? c.geoTaggedPhotoUrl : "No Link"}"`,
+      `"${c.signatures?.[0]?.consumerSignature && c.signatures[0].consumerSignature.startsWith('http') ? c.signatures[0].consumerSignature : "No Link"}"`,
+      `"${c.signatures?.[0]?.vendorSignature && c.signatures[0].vendorSignature.startsWith('http') ? c.signatures[0].vendorSignature : "No Link"}"`
     ]);
 
     const csvContent = [headers.join(","), ...rows.map(e => e.join(","))].join("\n");
@@ -441,14 +446,26 @@ export default function DashboardClient({ initialConsumers }: { initialConsumers
 
             <h3 style={{ color: "#f8fafc", marginTop: "30px", marginBottom: "15px", borderBottom: "1px solid rgba(255,255,255,0.1)", paddingBottom: "10px" }}>Captured Media & Signatures</h3>
             <div className="responsive-grid-2" style={{ gap: "20px" }}>
-              {selectedConsumer.geoTaggedPhotoUrl ? (
-                <div style={{ background: "rgba(255,255,255,0.05)", padding: "15px", borderRadius: "12px", border: "1px solid rgba(255,255,255,0.1)" }}>
-                  <h4 style={{ color: "#94a3b8", marginBottom: "10px", fontSize: "14px" }}>Geo-Tagged Installation Photo</h4>
-                  <img src={selectedConsumer.geoTaggedPhotoUrl} alt="Geo Photo" style={{ width: "100%", maxHeight: "250px", objectFit: "contain", borderRadius: "8px" }} />
-                </div>
-              ) : (
-                <div style={{ background: "rgba(255,255,255,0.05)", padding: "15px", borderRadius: "12px", border: "1px solid rgba(255,255,255,0.1)", color: "#ef4444" }}>No Geo Photo Captured</div>
-              )}
+              
+              <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
+                {selectedConsumer.geoTaggedPhotoUrl ? (
+                  <div style={{ background: "rgba(255,255,255,0.05)", padding: "15px", borderRadius: "12px", border: "1px solid rgba(255,255,255,0.1)" }}>
+                    <h4 style={{ color: "#94a3b8", marginBottom: "10px", fontSize: "14px" }}>Geo-Tagged Installation Photo</h4>
+                    <img src={selectedConsumer.geoTaggedPhotoUrl} alt="Geo Photo" style={{ width: "100%", maxHeight: "250px", objectFit: "contain", borderRadius: "8px" }} />
+                  </div>
+                ) : (
+                  <div style={{ background: "rgba(255,255,255,0.05)", padding: "15px", borderRadius: "12px", border: "1px solid rgba(255,255,255,0.1)", color: "#ef4444" }}>No Geo Photo Captured</div>
+                )}
+
+                {selectedConsumer.aadharPhotoUrl ? (
+                  <div style={{ background: "rgba(255,255,255,0.05)", padding: "15px", borderRadius: "12px", border: "1px solid rgba(255,255,255,0.1)" }}>
+                    <h4 style={{ color: "#94a3b8", marginBottom: "10px", fontSize: "14px" }}>Aadhar Card Photo</h4>
+                    <img src={selectedConsumer.aadharPhotoUrl} alt="Aadhar Card" style={{ width: "100%", maxHeight: "250px", objectFit: "contain", borderRadius: "8px" }} />
+                  </div>
+                ) : (
+                  <div style={{ background: "rgba(255,255,255,0.05)", padding: "15px", borderRadius: "12px", border: "1px solid rgba(255,255,255,0.1)", color: "#ef4444" }}>No Aadhar Photo Captured</div>
+                )}
+              </div>
 
               <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
                 {selectedConsumer.signatures?.[0]?.consumerSignature ? (
