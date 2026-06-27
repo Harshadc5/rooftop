@@ -150,7 +150,7 @@ export default function DashboardClient({ initialConsumers }: { initialConsumers
         <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
           
           {/* KPI CARDS */}
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))", gap: "20px" }}>
+          <div className="responsive-grid-2 animate-fade-in-up stagger-1" style={{ marginBottom: "30px", gap: "20px", display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))" }}>
             <div className="glass-panel" style={{ padding: "20px", borderLeft: "4px solid #38bdf8" }}>
               <div style={{ color: "#94a3b8", fontSize: "14px", fontWeight: "600", textTransform: "uppercase" }}>Total Installations</div>
               <div style={{ color: "white", fontSize: "36px", fontWeight: "700", marginTop: "10px" }}>{totalInstallations}</div>
@@ -165,8 +165,8 @@ export default function DashboardClient({ initialConsumers }: { initialConsumers
             </div>
           </div>
 
-          {/* CHARTS SECTION */}
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: "20px" }}>
+          {filteredConsumers.length > 0 && (
+            <div className="animate-fade-in-up stagger-2" style={{ marginBottom: "30px", display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: "20px" }}>
             
             {/* Chart 1: Districts */}
             <div className="glass-panel" style={{ padding: "25px" }}>
@@ -227,7 +227,7 @@ export default function DashboardClient({ initialConsumers }: { initialConsumers
       )}
 
       {/* EXISTING TABLE SECTION */}
-      <div className="glass-panel" style={{ background: "rgba(0, 0, 0, 0.85)", padding: "25px", width: "100%", overflowX: "hidden" }}>
+      <div className="glass-panel animate-fade-in-up stagger-3" style={{ background: "rgba(0, 0, 0, 0.85)", padding: "25px", width: "100%", overflowX: "hidden" }}>
       <div className="stack-on-mobile" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px", flexWrap: "wrap", gap: "15px" }}>
         <div className="stack-on-mobile" style={{ display: "flex", alignItems: "center", gap: "15px" }}>
           <h2 style={{ fontSize: "20px", color: "var(--primary)", margin: 0 }}>Recent Installations</h2>
@@ -305,7 +305,7 @@ export default function DashboardClient({ initialConsumers }: { initialConsumers
             </thead>
             <tbody>
               {paginatedConsumers.map((c, index) => (
-                <tr key={c.id} style={{ borderBottom: "1px solid rgba(255,255,255,0.1)", whiteSpace: "nowrap", background: selectedIds.has(c.id) ? "rgba(239,68,68,0.1)" : "transparent" }}>
+                <tr key={c.id} className="table-row-hover" style={{ borderBottom: "1px solid rgba(255,255,255,0.1)", whiteSpace: "nowrap", background: selectedIds.has(c.id) ? "rgba(239,68,68,0.1)" : "transparent" }}>
                   <td style={{ padding: "12px 15px" }}>
                     <input 
                       type="checkbox" 
@@ -428,11 +428,49 @@ export default function DashboardClient({ initialConsumers }: { initialConsumers
                   <tr key={m.id} style={{ borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
                     <td style={{ padding: "8px" }}>{idx + 1}</td>
                     <td style={{ padding: "8px" }}>{m.serialNumber}</td>
-                    <td style={{ padding: "8px" }}>{m.almmNumber || "N/A"}</td>
+                    <td style={{ padding: "8px" }}>
+                      {m.almmNumber || "N/A"}
+                      {m.almmImageUrl && (
+                        <a href={m.almmImageUrl} target="_blank" rel="noreferrer" style={{ marginLeft: "10px", color: "var(--primary)" }}>[View Photo]</a>
+                      )}
+                    </td>
                   </tr>
                 ))}
               </tbody>
             </table>
+
+            <h3 style={{ color: "#f8fafc", marginTop: "30px", marginBottom: "15px", borderBottom: "1px solid rgba(255,255,255,0.1)", paddingBottom: "10px" }}>Captured Media & Signatures</h3>
+            <div className="responsive-grid-2" style={{ gap: "20px" }}>
+              {selectedConsumer.geoTaggedPhotoUrl ? (
+                <div style={{ background: "rgba(255,255,255,0.05)", padding: "15px", borderRadius: "12px", border: "1px solid rgba(255,255,255,0.1)" }}>
+                  <h4 style={{ color: "#94a3b8", marginBottom: "10px", fontSize: "14px" }}>Geo-Tagged Installation Photo</h4>
+                  <img src={selectedConsumer.geoTaggedPhotoUrl} alt="Geo Photo" style={{ width: "100%", maxHeight: "250px", objectFit: "contain", borderRadius: "8px" }} />
+                </div>
+              ) : (
+                <div style={{ background: "rgba(255,255,255,0.05)", padding: "15px", borderRadius: "12px", border: "1px solid rgba(255,255,255,0.1)", color: "#ef4444" }}>No Geo Photo Captured</div>
+              )}
+
+              <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
+                {selectedConsumer.signatures?.[0]?.consumerSignature ? (
+                  <div style={{ background: "white", padding: "15px", borderRadius: "12px" }}>
+                    <h4 style={{ color: "#0f172a", marginBottom: "10px", fontSize: "14px" }}>Consumer Signature</h4>
+                    <img src={selectedConsumer.signatures[0].consumerSignature} alt="Consumer Sig" style={{ width: "100%", maxHeight: "100px", objectFit: "contain" }} />
+                  </div>
+                ) : (
+                  <div style={{ background: "rgba(255,255,255,0.05)", padding: "15px", borderRadius: "12px", border: "1px solid rgba(255,255,255,0.1)", color: "#ef4444" }}>No Consumer Signature</div>
+                )}
+
+                {selectedConsumer.signatures?.[0]?.vendorSignature ? (
+                  <div style={{ background: "white", padding: "15px", borderRadius: "12px" }}>
+                    <h4 style={{ color: "#0f172a", marginBottom: "10px", fontSize: "14px" }}>Vendor/Installer Signature</h4>
+                    <img src={selectedConsumer.signatures[0].vendorSignature} alt="Vendor Sig" style={{ width: "100%", maxHeight: "100px", objectFit: "contain" }} />
+                  </div>
+                ) : (
+                  <div style={{ background: "rgba(255,255,255,0.05)", padding: "15px", borderRadius: "12px", border: "1px solid rgba(255,255,255,0.1)", color: "#ef4444" }}>No Vendor Signature</div>
+                )}
+              </div>
+            </div>
+
           </div>
         </div>
       )}
