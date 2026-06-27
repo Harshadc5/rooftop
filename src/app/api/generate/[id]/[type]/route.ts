@@ -9,15 +9,16 @@ import path from "path";
 
 const prisma = new PrismaClient();
 
-// Helper function to fetch HTTP images into buffers
-async function fetchImageBuffer(url: string | null | undefined): Promise<any> {
+// Helper function to fetch HTTP images and convert them to Base64 strings for docxtemplater
+async function fetchImageBuffer(url: string | null | undefined): Promise<string> {
   if (!url) return "";
   if (url.startsWith("http")) {
     try {
       const response = await fetch(url);
       if (!response.ok) return "";
       const arrayBuffer = await response.arrayBuffer();
-      return Buffer.from(arrayBuffer);
+      const base64 = Buffer.from(arrayBuffer).toString("base64");
+      return `data:image/png;base64,${base64}`;
     } catch (e) {
       console.error("Failed to fetch image for document:", e);
       return "";
@@ -75,17 +76,22 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
       zip.file(f.name, xml);
     });
 
+    const transparentPixel = Buffer.from(
+      "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=",
+      "base64"
+    );
+
     // Image Module Configuration
     const imageOptions = {
       centered: false,
       getImage: function (tagValue: any, tagName: string) {
-        if (!tagValue || tagValue === "") return null;
+        if (!tagValue || tagValue === "") return transparentPixel;
         if (Buffer.isBuffer(tagValue)) return tagValue;
         try {
           const base64Data = tagValue.replace(/^data:image\/\w+;base64,/, "");
           return Buffer.from(base64Data, "base64");
         } catch (e) {
-          return null;
+          return transparentPixel;
         }
       },
       getSize: function (img: any, tagValue: string, tagName: string) {
