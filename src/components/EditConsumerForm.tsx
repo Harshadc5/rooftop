@@ -18,7 +18,7 @@ export default function EditConsumerForm({ initialData }: { initialData: any }) 
 
   // Equipment State
   const [moduleCount, setModuleCount] = useState<number | "">(initialData.moduleCount || "");
-  const [modules, setModules] = useState<{serialNumber: string, almmNumber: string, almmImage: File | null}[]>(
+  const [modules, setModules] = useState<{id?: string, serialNumber: string, almmNumber: string, almmImageUrl?: string}[]>(
     initialData.modules || []
   );
 
@@ -30,7 +30,7 @@ export default function EditConsumerForm({ initialData }: { initialData: any }) 
     setModuleCount(count);
     if (typeof count === "number" && count > 0) {
       const newModules = Array.from({ length: count }, (_, i) => {
-        return modules[i] || { serialNumber: "", almmNumber: "", almmImage: null };
+        return modules[i] || { serialNumber: "", almmNumber: "" };
       });
       setModules(newModules);
     } else {
@@ -238,10 +238,26 @@ export default function EditConsumerForm({ initialData }: { initialData: any }) 
                     <input type="text" className="input-field" value={index + 1} readOnly style={{ padding: "14px", textAlign: "center", background: "#f1f5f9", fontWeight: "bold" }} />
                   </div>
                   <div className="form-group" style={{ marginBottom: 0 }}>
-                    <label className="form-label" style={{ fontSize: "12px" }}>ALMM Number (Or upload photo)</label>
-                    <div className="stack-on-mobile" style={{ display: "flex", gap: "10px" }}>
-                      <input type="text" className="input-field" placeholder="ALMM Text" value={mod.almmNumber || mod.serialNumber || ""} onChange={(e) => updateModule(index, "serialNumber", e.target.value)} />
-                      <input type="file" accept="image/*" capture="environment" onChange={(e) => updateModule(index, "almmImage", e.target.files?.[0] || null)} style={{ width: "100%", maxWidth: "150px", padding: "14px", background: "white", borderRadius: "8px", border: "1px solid #cbd5e1" }} />
+                    <label className="form-label" style={{ fontSize: "12px" }}>
+                      ALMM Number {(!mod.almmNumber && mod.almmImageUrl) && <span style={{ color: "#ef4444" }}>(⚠️ Action Required: Read photo and type here)</span>}
+                    </label>
+                    <div className="stack-on-mobile" style={{ display: "flex", gap: "10px", alignItems: "center" }}>
+                      <input 
+                        type="text" 
+                        className="input-field" 
+                        placeholder="Type ALMM Text here" 
+                        value={mod.almmNumber || ""} 
+                        onChange={(e) => updateModule(index, "almmNumber", e.target.value)} 
+                        style={{ border: (!mod.almmNumber && mod.almmImageUrl) ? "2px solid #ef4444" : "1px solid rgba(255,255,255,0.2)" }}
+                      />
+                      
+                      {mod.almmImageUrl && (
+                        <div style={{ flexShrink: 0 }}>
+                          <a href={mod.almmImageUrl} target="_blank" rel="noreferrer" title="Click to view full photo">
+                            <img src={mod.almmImageUrl} alt="ALMM Upload" style={{ width: "60px", height: "60px", borderRadius: "8px", objectFit: "cover", border: "1px solid #cbd5e1" }} />
+                          </a>
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>

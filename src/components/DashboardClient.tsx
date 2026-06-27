@@ -265,7 +265,14 @@ export default function DashboardClient({ initialConsumers }: { initialConsumers
                   <td style={{ padding: "12px 15px", fontWeight: "500", fontSize: "14px", maxWidth: "200px", overflow: "hidden", textOverflow: "ellipsis" }}>{c.consumerName}</td>
                   <td style={{ padding: "12px 15px", color: "#cbd5e1", fontSize: "14px" }}>{c.mobileNumber}</td>
                   <td style={{ padding: "12px 15px", color: "#cbd5e1", fontSize: "14px" }}>{c.dateOfApplication}</td>
-                  <td style={{ padding: "12px 15px", color: "#cbd5e1", fontSize: "14px" }}>{c.moduleCount}</td>
+                  <td style={{ padding: "12px 15px", color: "#cbd5e1", fontSize: "14px" }}>
+                    {c.moduleCount}
+                    {c.modules.some((m: any) => !m.almmNumber && m.almmImageUrl) && (
+                      <span title="Missing ALMM text (photo uploaded)" style={{ marginLeft: "8px", color: "#f59e0b", fontSize: "16px", cursor: "help" }}>
+                        ⚠️
+                      </span>
+                    )}
+                  </td>
                   <td style={{ padding: "12px 15px", display: "flex", gap: "8px", alignItems: "center" }}>
                     <a href={`/api/generate/${c.id}/WCR`} className="btn-primary" style={{ padding: "6px 10px", fontSize: "12px", textDecoration: "none", background: "#3b82f6", borderRadius: "4px" }}>WCR</a>
                     <a href={`/api/generate/${c.id}/ANNEXURE_1`} className="btn-primary" style={{ padding: "6px 10px", fontSize: "12px", textDecoration: "none", background: "#10b981", borderRadius: "4px" }}>Anx 1</a>

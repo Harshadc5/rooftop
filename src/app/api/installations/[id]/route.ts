@@ -67,7 +67,8 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
           deleteMany: {},
           create: body.modules ? body.modules.map((m: any, index: number) => ({
             serialNumber: String(index + 1),
-            almmNumber: m.almmNumber || m.serialNumber || null
+            almmNumber: m.almmNumber || m.serialNumber || null,
+            almmImageUrl: m.almmImageUrl || null
           })) : []
         },
       }
