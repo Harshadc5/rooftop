@@ -67,8 +67,11 @@ export default function EditConsumerForm({ initialData }: { initialData: any }) 
             setState(data.address.state || "");
             setZipCode(data.address.postcode || "");
             const preciseAddressParts = [
-              data.address.house_number, 
-              data.address.road, 
+              data.address.plot_number || data.address.plot,
+              data.address.house_number || data.address.building,
+              data.address.lane,
+              data.address.road,
+              data.address.serve_number || data.address.survey_number,
               data.address.neighbourhood, 
               data.address.suburb,
               data.address.city || data.address.town || data.address.village

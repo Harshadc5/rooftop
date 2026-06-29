@@ -138,8 +138,23 @@ export default function FitterPortal() {
             setState(stateStr);
             setZipCode(zipStr);
 
+            const preciseAddressParts = [
+              data.address.plot_number || data.address.plot,
+              data.address.house_number || data.address.building,
+              data.address.lane,
+              data.address.road,
+              data.address.serve_number || data.address.survey_number,
+              data.address.neighbourhood,
+              data.address.suburb,
+              data.address.city || data.address.town || data.address.village
+            ].filter(Boolean);
+
+            const detailedAddress = preciseAddressParts.length > 0 
+              ? preciseAddressParts.join(", ") 
+              : data.display_name;
+
             // Since the separate UI boxes are now hidden, we place the full detected address into the Complete Address box so the user can see it!
-            setAddress(cleanEnglishText(data.display_name || ""));
+            setAddress(cleanEnglishText(detailedAddress || ""));
           }
         } catch (err) {
           alert("Failed to get address from coordinates.");
