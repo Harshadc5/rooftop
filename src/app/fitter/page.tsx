@@ -120,14 +120,21 @@ export default function FitterPortal() {
           const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${position.coords.latitude}&lon=${position.coords.longitude}&zoom=18&addressdetails=1&accept-language=en`);
           const data = await res.json();
           if (data.address) {
-            setCity(data.address.city || data.address.town || data.address.village || data.address.suburb || "");
-            setDistrict(data.address.state_district || data.address.county || "");
-            setState(data.address.state || "");
-            setZipCode(data.address.postcode || "");
+            // Helper to strictly strip out non-English (non-ASCII) characters like Marathi/Hindi scripts
+            const cleanEnglishText = (text: string) => {
+              if (!text) return "";
+              let clean = text.replace(/[^\x00-\x7F]+/g, ''); // Strip non-ASCII
+              return clean.replace(/,\s*,/g, ',').replace(/\s+/g, ' ').replace(/^,\s*/, '').replace(/,\s*$/, '').trim(); // Clean up leftover commas
+            };
+
+            setCity(cleanEnglishText(data.address.city || data.address.town || data.address.village || data.address.suburb || ""));
+            setDistrict(cleanEnglishText(data.address.state_district || data.address.county || ""));
+            setState(cleanEnglishText(data.address.state || ""));
+            setZipCode(cleanEnglishText(data.address.postcode || ""));
 
             // Use the full formatted address provided by OpenStreetMap to get maximum detail
             // (house number, plot, building, landmark, colony, city, district, state, zip)
-            setAddress(data.display_name || "");
+            setAddress(cleanEnglishText(data.display_name || ""));
           }
         } catch (err) {
           alert("Failed to get address from coordinates.");
