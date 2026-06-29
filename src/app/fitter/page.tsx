@@ -127,14 +127,30 @@ export default function FitterPortal() {
               return clean.replace(/,\s*,/g, ',').replace(/\s+/g, ' ').replace(/^,\s*/, '').replace(/,\s*$/, '').trim(); // Clean up leftover commas
             };
 
-            setCity(cleanEnglishText(data.address.city || data.address.town || data.address.village || data.address.suburb || ""));
-            setDistrict(cleanEnglishText(data.address.state_district || data.address.county || ""));
-            setState(cleanEnglishText(data.address.state || ""));
-            setZipCode(cleanEnglishText(data.address.postcode || ""));
+            const cityStr = cleanEnglishText(data.address.city || data.address.town || data.address.village || data.address.suburb || "");
+            const districtStr = cleanEnglishText(data.address.state_district || data.address.county || "");
+            const stateStr = cleanEnglishText(data.address.state || "");
+            const zipStr = cleanEnglishText(data.address.postcode || "");
+            const countryStr = cleanEnglishText(data.address.country || "India");
 
-            // Use the full formatted address provided by OpenStreetMap to get maximum detail
-            // (house number, plot, building, landmark, colony, city, district, state, zip)
-            setAddress(cleanEnglishText(data.display_name || ""));
+            setCity(cityStr);
+            setDistrict(districtStr);
+            setState(stateStr);
+            setZipCode(zipStr);
+
+            // Filter out the district, state, zip, and country from the full display_name so they aren't duplicated in the Address box
+            let fullAddressSegments = (data.display_name || "").split(',').map(s => cleanEnglishText(s));
+            fullAddressSegments = fullAddressSegments.filter(segment => {
+              const segLower = segment.toLowerCase();
+              if (districtStr && segLower === districtStr.toLowerCase()) return false;
+              if (stateStr && segLower === stateStr.toLowerCase()) return false;
+              if (zipStr && segLower === zipStr.toLowerCase()) return false;
+              if (countryStr && segLower === countryStr.toLowerCase()) return false;
+              if (segLower === "india") return false;
+              return true;
+            });
+            
+            setAddress(fullAddressSegments.join(", ").replace(/^,\s*/, '').replace(/,\s*$/, '').trim());
           }
         } catch (err) {
           alert("Failed to get address from coordinates.");
