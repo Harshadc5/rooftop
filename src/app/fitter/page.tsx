@@ -138,10 +138,11 @@ export default function FitterPortal() {
             setState(stateStr);
             setZipCode(zipStr);
 
-            // Filter out the district, state, zip, and country from the full display_name so they aren't duplicated in the Address box
+            // Filter out the city, district, state, zip, and country from the full display_name so they aren't duplicated in the Address box
             let fullAddressSegments = (data.display_name || "").split(',').map(s => cleanEnglishText(s));
             fullAddressSegments = fullAddressSegments.filter(segment => {
               const segLower = segment.toLowerCase();
+              if (cityStr && segLower === cityStr.toLowerCase()) return false;
               if (districtStr && segLower === districtStr.toLowerCase()) return false;
               if (stateStr && segLower === stateStr.toLowerCase()) return false;
               if (zipStr && segLower === zipStr.toLowerCase()) return false;
