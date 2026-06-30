@@ -45,6 +45,14 @@ export default function DashboardClient({ initialConsumers }: { initialConsumers
     }
   };
 
+  const openBase64ImageInNewTab = (e: React.MouseEvent, base64Url: string) => {
+    e.preventDefault();
+    const newWindow = window.open();
+    if (newWindow) {
+      newWindow.document.write(`<body style="margin:0;display:flex;justify-content:center;align-items:center;background:#0f172a;height:100vh;"><img src="${base64Url}" style="max-width:100%;max-height:100vh;" /></body>`);
+    }
+  };
+
   const exportToCSV = () => {
     const headers = [
       "S.No.", "Consumer Name", "Mobile Number", "Email", "Application Date", 
@@ -437,7 +445,7 @@ export default function DashboardClient({ initialConsumers }: { initialConsumers
                     <td style={{ padding: "8px" }}>
                       {m.almmNumber || "N/A"}
                       {m.almmImageUrl && (
-                        <a href={m.almmImageUrl} target="_blank" rel="noreferrer" style={{ marginLeft: "10px", color: "var(--primary)" }}>[View Photo]</a>
+                        <a href="#" onClick={(e) => openBase64ImageInNewTab(e, m.almmImageUrl)} style={{ marginLeft: "10px", color: "var(--primary)" }}>[View Photo]</a>
                       )}
                     </td>
                   </tr>
