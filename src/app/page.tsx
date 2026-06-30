@@ -20,7 +20,7 @@ export default function LoginPage() {
     e.preventDefault();
     setError("");
     setIsLoading(true);
-    
+
     const res = await signIn("credentials", {
       username,
       password,
@@ -37,29 +37,29 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="login-wrapper" style={{ 
-      display: "flex", 
-      minHeight: "100vh", 
+    <div className="login-wrapper" style={{
+      display: "flex",
+      minHeight: "100vh",
       background: "linear-gradient(135deg, rgba(30, 41, 59, 0.8) 0%, rgba(15, 23, 42, 0.95) 100%), url('https://images.unsplash.com/photo-1509391366360-2e959784a276?auto=format&fit=crop&q=80&w=1200')",
       backgroundSize: "cover",
       backgroundPosition: "center",
       backgroundAttachment: "fixed"
     }}>
-      
+
       {/* TOP/LEFT SIDE - BRANDING */}
-      <div className="login-branding" style={{ 
-        flex: 1, 
-        position: "relative", 
-        display: "flex", 
-        flexDirection: "column", 
-        justifyContent: "space-between", 
-        padding: "60px", 
-        overflow: "hidden" 
+      <div className="login-branding" style={{
+        flex: 1,
+        position: "relative",
+        display: "flex",
+        flexDirection: "column",
+        justifyContent: "space-between",
+        padding: "60px",
+        overflow: "hidden"
       }}>
         {/* Decorative Background Elements */}
         <div style={{ position: "absolute", top: "-10%", left: "-10%", width: "500px", height: "500px", background: "radial-gradient(circle, rgba(245,158,11,0.2) 0%, rgba(245,158,11,0) 70%)", borderRadius: "50%" }}></div>
         <div style={{ position: "absolute", bottom: "-20%", right: "-10%", width: "600px", height: "600px", background: "radial-gradient(circle, rgba(56,189,248,0.15) 0%, rgba(56,189,248,0) 70%)", borderRadius: "50%" }}></div>
-        
+
         <div style={{ position: "relative", zIndex: 10 }}>
           <div style={{ display: "flex", alignItems: "center", gap: "15px", marginBottom: "40px" }}>
             <div style={{ background: "linear-gradient(135deg, var(--primary), #ea580c)", padding: "12px", borderRadius: "12px", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 4px 20px rgba(245,158,11,0.4)" }}>
@@ -75,9 +75,9 @@ export default function LoginPage() {
                 <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
               </svg>
             </div>
-            <h1 style={{ fontSize: "24px", fontWeight: "800", color: "white", letterSpacing: "1px" }}>MITALI ENTERPRISES <span style={{fontWeight: "400", opacity: 0.7}}>| SolarConnect</span></h1>
+            <h1 style={{ fontSize: "24px", fontWeight: "800", color: "white", letterSpacing: "1px" }}>MITALI ENTERPRISES <span style={{ fontWeight: "400", opacity: 0.7 }}>| SolarConnect</span></h1>
           </div>
-          
+
           <h2 className="login-h2" style={{ fontSize: "48px", fontWeight: "700", color: "white", lineHeight: "1.1", marginBottom: "20px", maxWidth: "500px" }}>
             Powering the Future of <span style={{ color: "var(--primary)" }}>Rooftop Solar</span>
           </h2>
@@ -102,7 +102,7 @@ export default function LoginPage() {
 
       {/* RIGHT SIDE - LOGIN FORM */}
       <div style={{ flex: 1, display: "flex", justifyContent: "center", alignItems: "center", padding: "40px", position: "relative" }}>
-        
+
         <div className="glass-panel animate-fade-in-up" style={{ width: "100%", maxWidth: "450px" }}>
           <div style={{ marginBottom: "40px" }}>
             <h2 style={{ fontSize: "32px", fontWeight: "700", color: "white", marginBottom: "10px" }}>Welcome Back</h2>
@@ -112,30 +112,29 @@ export default function LoginPage() {
           <form onSubmit={handleLogin}>
             <div className="form-group" style={{ marginBottom: "25px" }}>
               <label className="form-label" style={{ color: "#f8fafc", fontSize: "14px" }}>Username</label>
-              <input 
-                type="text" 
-                className="input-field" 
+              <input
+                type="text"
+                className="input-field"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 placeholder="Enter your username"
                 style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.2)", color: "white", padding: "16px", fontSize: "16px", borderRadius: "12px" }}
-                required 
+                required
               />
             </div>
 
             <div className="form-group" style={{ marginBottom: "30px" }}>
               <label className="form-label" style={{ color: "#f8fafc", fontSize: "14px", display: 'flex', justifyContent: 'space-between' }}>
                 <span>Password</span>
-                <span style={{ color: "var(--primary)", cursor: "pointer", fontSize: "13px", fontWeight: "500" }}>Forgot Password?</span>
               </label>
-              <input 
-                type="password" 
-                className="input-field" 
+              <input
+                type="password"
+                className="input-field"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
                 style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.2)", color: "white", padding: "16px", fontSize: "16px", borderRadius: "12px" }}
-                required 
+                required
               />
             </div>
 
@@ -150,10 +149,10 @@ export default function LoginPage() {
               {isLoading ? "Authenticating securely..." : "Sign In securely"}
             </button>
           </form>
-          
+
 
         </div>
-        
+
       </div>
     </div>
   );
