@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import SignaturePad from "@/components/SignaturePad";
 import GeoCamera from "@/components/GeoCamera";
+import PhotoUpload from "@/components/PhotoUpload";
 
 export default function EditConsumerForm({ initialData }: { initialData: any }) {
   const router = useRouter();
@@ -28,7 +29,9 @@ export default function EditConsumerForm({ initialData }: { initialData: any }) 
     initialData.modules || []
   );
 
-  // Geo Photo State
+  // Photo States
+  const [aadharPhoto, setAadharPhoto] = useState(initialData.aadharPhotoUrl || "");
+  const [inverterImageUrl, setInverterImageUrl] = useState(initialData.inverterImageUrl || "");
   const [geoPhoto, setGeoPhoto] = useState(initialData.geoTaggedPhotoUrl || "");
 
   const openBase64ImageInNewTab = (e: React.MouseEvent, base64Url: string) => {
@@ -195,13 +198,25 @@ export default function EditConsumerForm({ initialData }: { initialData: any }) 
           <div className="form-group" style={{ gridColumn: "1 / -1", marginTop: "-10px" }}>
             <label className="form-label">Complete Address</label><input type="text" name="address" className="input-field" value={address} onChange={e => setAddress(e.target.value)} required />
           </div>
-          <div className="form-group"><label className="form-label">City</label><input type="text" name="city" className="input-field" value={city} onChange={e => setCity(e.target.value)} required /></div>
-          <div className="form-group"><label className="form-label">District</label><input type="text" name="district" className="input-field" value={district} onChange={e => setDistrict(e.target.value)} required /></div>
-          <div className="form-group"><label className="form-label">State</label><input type="text" name="state" className="input-field" value={state} onChange={e => setState(e.target.value)} /></div>
-          <div className="form-group"><label className="form-label">Postal Zip Code</label><input type="text" name="zipCode" className="input-field" value={zipCode} onChange={e => setZipCode(e.target.value)} /></div>
+          <input type="hidden" name="city" value={city} />
+          <input type="hidden" name="district" value={district} />
+          <input type="hidden" name="state" value={state} />
+          <input type="hidden" name="zipCode" value={zipCode} />
 
           <div className="form-group"><label className="form-label">Aadhar Number (12 digits)</label><input type="text" name="aadharNumber" defaultValue={initialData.aadharNumber} className="input-field" pattern="\d{12}" maxLength={12} title="Must be exactly 12 digits" required /></div>
-          <input type="hidden" name="aadharPhotoUrl" value={initialData.aadharPhotoUrl || ""} />
+          <div className="form-group">
+            <label className="form-label">Aadhar Card Photo</label>
+            <PhotoUpload
+              label="Aadhar Card"
+              value={aadharPhoto}
+              onChange={setAadharPhoto}
+              onClear={() => setAadharPhoto("")}
+              maxDim={1000}
+              quality={0.7}
+              previewHeight={180}
+            />
+            <input type="hidden" name="aadharPhotoUrl" value={aadharPhoto || ""} />
+          </div>
         </div>
 
         {/* SECTION 2: Project Details */}
@@ -235,20 +250,23 @@ export default function EditConsumerForm({ initialData }: { initialData: any }) 
         </h2>
         <div className="responsive-grid-2" style={{ marginBottom: "20px" }}>
           <div className="form-group"><label className="form-label">Inverter Make</label><input type="text" name="inverterMake" defaultValue={initialData.inverterMake} className="input-field" required /></div>
-          <div className="form-group" style={{ gridColumn: "1 / -1", display: "flex", gap: "10px", alignItems: "flex-end" }}>
-            <div style={{ flex: 1 }}>
-              <label className="form-label">Inverter Model Barcode</label>
-              <input type="text" name="inverterModel" defaultValue={initialData.inverterModel} className="input-field" required />
-            </div>
-            {initialData.inverterImageUrl && (
-              <div style={{ width: "45px", height: "45px", borderRadius: "8px", overflow: "hidden", border: "1px solid #cbd5e1", flexShrink: 0 }}>
-                <img src={initialData.inverterImageUrl} alt="Inverter Barcode" style={{ width: "100%", height: "100%", objectFit: "cover", cursor: "pointer" }} onClick={(e) => {
-                  const newWindow = window.open();
-                  if (newWindow) newWindow.document.write(`<body style="margin:0;display:flex;justify-content:center;align-items:center;background:#0f172a;height:100vh;"><img src="${initialData.inverterImageUrl}" style="max-width:100%;max-height:100vh;" /></body>`);
-                }} />
+          <div className="form-group" style={{ gridColumn: "1 / -1" }}>
+            <label className="form-label">Inverter Model Barcode (Or upload photo)</label>
+            <div className="stack-on-mobile" style={{ display: "flex", gap: "10px" }}>
+              <input type="text" name="inverterModel" defaultValue={initialData.inverterModel} className="input-field" required style={{ flex: 1, minWidth: "200px" }} />
+              <div style={{ minWidth: "160px" }}>
+                <PhotoUpload
+                  label="Inverter Photo"
+                  value={inverterImageUrl}
+                  onChange={setInverterImageUrl}
+                  onClear={() => setInverterImageUrl("")}
+                  maxDim={800}
+                  quality={0.6}
+                  previewHeight={80}
+                />
               </div>
-            )}
-            <input type="hidden" name="inverterImageUrl" value={initialData.inverterImageUrl || ""} />
+            </div>
+            <input type="hidden" name="inverterImageUrl" value={inverterImageUrl || ""} />
           </div>
           <div className="form-group"><label className="form-label">Inverter Capacity (KW)</label><input type="number" step="0.1" name="inverterCapacity" defaultValue={initialData.inverterCapacity} className="input-field" required /></div>
           <div className="form-group"><label className="form-label">SolarPV Details - Inverter Capacity</label><input type="text" name="capacityOfInverter" defaultValue={initialData.capacityOfInverter || ""} className="input-field" placeholder="e.g. 5 KW" /></div>
@@ -318,11 +336,15 @@ export default function EditConsumerForm({ initialData }: { initialData: any }) 
         <div className="form-group" style={{ marginBottom: "40px" }}>
           <label className="form-label">Geo-tagged Photo of Module</label>
           <div style={{ padding: "15px", background: "rgba(255,255,255,0.05)", borderRadius: "8px" }}>
-            {geoPhoto ? (
-              <img src={geoPhoto} alt="Geo Photo" style={{ maxWidth: "200px", borderRadius: "8px" }} />
-            ) : (
-              <span style={{ color: "#94a3b8" }}>No photo saved</span>
-            )}
+            <PhotoUpload
+              label="Geo Photo"
+              value={geoPhoto}
+              onChange={setGeoPhoto}
+              onClear={() => setGeoPhoto("")}
+              maxDim={1000}
+              quality={0.7}
+              previewHeight={160}
+            />
           </div>
           <input type="hidden" name="geoTaggedPhotoUrl" value={geoPhoto} />
         </div>

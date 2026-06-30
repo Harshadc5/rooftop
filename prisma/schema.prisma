@@ -86,6 +86,7 @@ model Signature {
   consumerId          String   @unique
   consumerSignature   String?  // Data URL for signature pad
   vendorSignature     String?  // Data URL for signature pad
+  witness2Signature   String?  // Data URL for signature pad
   
   consumer            Consumer @relation(fields: [consumerId], references: [id], onDelete: Cascade)
 }

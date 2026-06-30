@@ -69,7 +69,7 @@ export default function DashboardClient({ initialConsumers }: { initialConsumers
       "State", "Zip Code", "Category", "Sanction Number", "Capacity (KW)", 
       "Inverter Make", "Inverter Model", "Inverter Capacity (KW)", "Module Make", 
       "Module Capacity", "Module Count", "Panel Serial/ALMM Numbers",
-      "Aadhar Photo URL", "Geo-Photo URL", "Consumer Signature URL", "Vendor Signature URL"
+      "Aadhar Photo URL", "Geo-Photo URL", "Consumer Signature URL", "Vendor Signature URL", "Witness 2 Signature URL"
     ];
     
     const rows = filteredConsumers.map((c, idx) => [
@@ -100,7 +100,8 @@ export default function DashboardClient({ initialConsumers }: { initialConsumers
       `"${c.aadharPhotoUrl && c.aadharPhotoUrl.startsWith('http') ? c.aadharPhotoUrl : "No Link"}"`,
       `"${c.geoTaggedPhotoUrl && c.geoTaggedPhotoUrl.startsWith('http') ? c.geoTaggedPhotoUrl : "No Link"}"`,
       `"${c.signatures?.consumerSignature && c.signatures.consumerSignature.startsWith('http') ? c.signatures.consumerSignature : "No Link"}"`,
-      `"${c.signatures?.vendorSignature && c.signatures.vendorSignature.startsWith('http') ? c.signatures.vendorSignature : "No Link"}"`
+      `"${c.signatures?.vendorSignature && c.signatures.vendorSignature.startsWith('http') ? c.signatures.vendorSignature : "No Link"}"`,
+      `"${c.signatures?.witness2Signature && c.signatures.witness2Signature.startsWith('http') ? c.signatures.witness2Signature : "No Link"}"`
     ]);
 
     const csvContent = [headers.join(","), ...rows.map(e => e.join(","))].join("\n");
@@ -127,7 +128,25 @@ export default function DashboardClient({ initialConsumers }: { initialConsumers
   const getTopItems = (field: string, limit: number = 5) => {
     const counts: Record<string, number> = {};
     initialConsumers.forEach(c => {
-      const val = c[field] || "Unknown";
+      let val = c[field];
+
+      if (field === "district" && c.address) {
+        // Extract district from Complete Address (e.g., "..., Pune, Maharashtra 411014, India")
+        const parts = c.address.split(',').map(p => p.trim()).filter(Boolean);
+        let len = parts.length;
+        if (len > 0 && parts[len - 1].toLowerCase() === 'india') {
+          parts.pop();
+          len--;
+        }
+        if (len >= 2) {
+          val = parts[len - 2]; // Usually the City/District
+        } else if (len === 1) {
+          val = parts[0];
+        }
+        if (val) val = val.replace(/[0-9]/g, '').trim(); // Remove any stray zip codes
+      }
+
+      val = val || c[field] || "Unknown";
       counts[val] = (counts[val] || 0) + 1;
     });
     return Object.entries(counts)
@@ -531,6 +550,15 @@ export default function DashboardClient({ initialConsumers }: { initialConsumers
                   </div>
                 ) : (
                   <div style={{ background: "rgba(255,255,255,0.05)", padding: "15px", borderRadius: "12px", border: "1px solid rgba(255,255,255,0.1)", color: "#ef4444" }}>No Vendor Signature</div>
+                )}
+
+                {selectedConsumer.signatures?.witness2Signature ? (
+                  <div style={{ background: "white", padding: "15px", borderRadius: "12px" }}>
+                    <h4 style={{ color: "#0f172a", marginBottom: "10px", fontSize: "14px" }}>Witness 2 Signature</h4>
+                    <img src={selectedConsumer.signatures.witness2Signature} alt="Witness 2 Sig" style={{ width: "100%", maxHeight: "100px", objectFit: "contain" }} />
+                  </div>
+                ) : (
+                  <div style={{ background: "rgba(255,255,255,0.05)", padding: "15px", borderRadius: "12px", border: "1px solid rgba(255,255,255,0.1)", color: "#ef4444" }}>No Witness 2 Signature</div>
                 )}
               </div>
             </div>

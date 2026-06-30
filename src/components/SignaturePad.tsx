@@ -1,123 +1,274 @@
 "use client";
-import { useRef, useState, useEffect } from "react";
+import { useRef, useState, useEffect, useCallback } from "react";
 
 interface Props {
   title: string;
   onUpdate: (dataUrl: string) => void;
 }
 
+interface Point {
+  x: number;
+  y: number;
+  time: number;
+}
+
 export default function SignaturePad({ title, onUpdate }: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const [isDrawing, setIsDrawing] = useState(false);
+  const isDrawingRef = useRef(false);
+  const pointsRef = useRef<Point[]>([]);
+  const lastVelocityRef = useRef(0);
+  const [isEmpty, setIsEmpty] = useState(true);
 
-  useEffect(() => {
+  // --- Setup canvas at correct device pixel ratio ---
+  const setupCanvas = useCallback(() => {
     const canvas = canvasRef.current;
-    if (canvas) {
-      // Set canvas drawing resolution to match its CSS display size to avoid blurry lines
-      const rect = canvas.parentElement?.getBoundingClientRect();
-      if (rect) {
-        canvas.width = rect.width;
-        canvas.height = 150;
-      }
-      const ctx = canvas.getContext("2d");
-      if (ctx) {
-        ctx.fillStyle = "white";
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-        ctx.lineWidth = 2.5;
-        ctx.lineCap = "round";
-        ctx.strokeStyle = "#000000";
-      }
-    }
+    if (!canvas) return;
+
+    const dpr = window.devicePixelRatio || 1;
+    const rect = canvas.getBoundingClientRect();
+
+    // Physical pixel resolution
+    canvas.width = rect.width * dpr;
+    canvas.height = rect.height * dpr;
+
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    ctx.scale(dpr, dpr);
+    ctx.fillStyle = "white";
+    ctx.fillRect(0, 0, rect.width, rect.height);
+
+    // Smooth rendering
+    ctx.lineCap = "round";
+    ctx.lineJoin = "round";
+    ctx.strokeStyle = "#111827";
   }, []);
 
-  const getCoordinates = (e: React.MouseEvent | React.TouchEvent) => {
-    const canvas = canvasRef.current;
-    if (!canvas) return { x: 0, y: 0 };
+  useEffect(() => {
+    setupCanvas();
+    window.addEventListener("resize", setupCanvas);
+    return () => window.removeEventListener("resize", setupCanvas);
+  }, [setupCanvas]);
+
+  // --- Coordinate helper ---
+  const getPoint = (e: { clientX: number; clientY: number }): Point => {
+    const canvas = canvasRef.current!;
     const rect = canvas.getBoundingClientRect();
-    
-    // Check if it's a touch event
-    if ('touches' in e && e.touches.length > 0) {
-      return {
-        x: e.touches[0].clientX - rect.left,
-        y: e.touches[0].clientY - rect.top
-      };
-    } else {
-      return {
-        x: (e as React.MouseEvent).clientX - rect.left,
-        y: (e as React.MouseEvent).clientY - rect.top
-      };
-    }
+    const dpr = window.devicePixelRatio || 1;
+    return {
+      x: ((e.clientX - rect.left) / rect.width) * (canvas.width / dpr),
+      y: ((e.clientY - rect.top) / rect.height) * (canvas.height / dpr),
+      time: Date.now(),
+    };
   };
 
-  const startDrawing = (e: React.MouseEvent | React.TouchEvent) => {
-    setIsDrawing(true);
-    const { x, y } = getCoordinates(e);
+  // --- Velocity → line width ---
+  const getLineWidth = (v: number): number => {
+    // Fast movement = thin stroke, slow = thick (like a real pen)
+    const min = 1.2;
+    const max = 3.8;
+    return Math.max(min, max - v * 0.08);
+  };
+
+  // --- Draw a smooth bezier segment ---
+  const drawSegment = useCallback((pts: Point[]) => {
+    if (pts.length < 2) return;
+    const ctx = canvasRef.current?.getContext("2d");
+    if (!ctx) return;
+
+    const p0 = pts[pts.length - 2];
+    const p1 = pts[pts.length - 1];
+
+    // Velocity in px/ms
+    const dt = Math.max(p1.time - p0.time, 1);
+    const dx = p1.x - p0.x;
+    const dy = p1.y - p0.y;
+    const dist = Math.sqrt(dx * dx + dy * dy);
+    const velocity = dist / dt;
+
+    // Smooth velocity with a low-pass filter
+    const smoothedVel = lastVelocityRef.current * 0.6 + velocity * 0.4;
+    lastVelocityRef.current = smoothedVel;
+
+    const width = getLineWidth(smoothedVel);
+
+    ctx.beginPath();
+    ctx.lineWidth = width;
+    ctx.strokeStyle = "#111827";
+
+    if (pts.length >= 3) {
+      // Use midpoints as control points for a quadratic bézier → buttery smooth
+      const prev = pts[pts.length - 3];
+      const midX0 = (prev.x + p0.x) / 2;
+      const midY0 = (prev.y + p0.y) / 2;
+      const midX1 = (p0.x + p1.x) / 2;
+      const midY1 = (p0.y + p1.y) / 2;
+
+      ctx.moveTo(midX0, midY0);
+      ctx.quadraticCurveTo(p0.x, p0.y, midX1, midY1);
+    } else {
+      ctx.moveTo(p0.x, p0.y);
+      ctx.lineTo(p1.x, p1.y);
+    }
+
+    ctx.stroke();
+  }, []);
+
+  // --- Event handlers ---
+  const startDrawing = useCallback((pt: Point) => {
+    isDrawingRef.current = true;
+    pointsRef.current = [pt];
+    lastVelocityRef.current = 0;
+    setIsEmpty(false);
+
     const ctx = canvasRef.current?.getContext("2d");
     if (ctx) {
       ctx.beginPath();
-      ctx.moveTo(x, y);
+      ctx.arc(pt.x, pt.y, 1.2, 0, Math.PI * 2);
+      ctx.fillStyle = "#111827";
+      ctx.fill();
     }
-  };
+  }, []);
 
-  const draw = (e: React.MouseEvent | React.TouchEvent) => {
-    if (!isDrawing) return;
-    
-    // Prevent scrolling while drawing on mobile
-    if ('touches' in e && e.cancelable) {
-      e.preventDefault();
-    }
-    
-    const { x, y } = getCoordinates(e);
-    const ctx = canvasRef.current?.getContext("2d");
-    if (ctx) {
-      ctx.lineTo(x, y);
-      ctx.stroke();
-    }
-  };
+  const continueDrawing = useCallback((pt: Point) => {
+    if (!isDrawingRef.current) return;
+    pointsRef.current.push(pt);
+    drawSegment(pointsRef.current);
+  }, [drawSegment]);
 
-  const stopDrawing = () => {
-    if (!isDrawing) return;
-    setIsDrawing(false);
+  const stopDrawing = useCallback(() => {
+    if (!isDrawingRef.current) return;
+    isDrawingRef.current = false;
+    pointsRef.current = [];
+
+    // Emit the final image
     const canvas = canvasRef.current;
     if (canvas) {
-      const ctx = canvas.getContext("2d");
-      ctx?.beginPath(); // reset path so next click doesn't connect
-      onUpdate(canvas.toDataURL("image/png")); // Send base64 image back to parent
+      onUpdate(canvas.toDataURL("image/png"));
     }
-  };
+  }, [onUpdate]);
 
-  const clear = () => {
+  // --- Mouse events ---
+  const onMouseDown = useCallback((e: React.MouseEvent) => {
+    startDrawing(getPoint(e.nativeEvent));
+  }, [startDrawing]);
+
+  const onMouseMove = useCallback((e: React.MouseEvent) => {
+    if (isDrawingRef.current) continueDrawing(getPoint(e.nativeEvent));
+  }, [continueDrawing]);
+
+  const onMouseUp = useCallback(() => stopDrawing(), [stopDrawing]);
+
+  // --- Touch events ---
+  const onTouchStart = useCallback((e: React.TouchEvent) => {
+    e.preventDefault();
+    startDrawing(getPoint(e.touches[0]));
+  }, [startDrawing]);
+
+  const onTouchMove = useCallback((e: React.TouchEvent) => {
+    e.preventDefault();
+    continueDrawing(getPoint(e.touches[0]));
+  }, [continueDrawing]);
+
+  const onTouchEnd = useCallback(() => stopDrawing(), [stopDrawing]);
+
+  // --- Clear ---
+  const clear = useCallback(() => {
     const canvas = canvasRef.current;
-    if (canvas) {
-      const ctx = canvas.getContext("2d");
-      if (ctx) {
-        ctx.fillStyle = "white";
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-        ctx.beginPath();
-        onUpdate("");
-      }
-    }
-  };
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+    const dpr = window.devicePixelRatio || 1;
+    const rect = canvas.getBoundingClientRect();
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.scale(dpr, dpr);
+    ctx.fillStyle = "white";
+    ctx.fillRect(0, 0, rect.width, rect.height);
+    setIsEmpty(true);
+    onUpdate("");
+  }, [onUpdate]);
 
   return (
     <div style={{ width: "100%" }}>
       <label className="form-label" style={{ color: "#ffffff" }}>{title}</label>
-      <div style={{ border: "1px solid #cbd5e1", borderRadius: "8px", overflow: "hidden", background: "white" }}>
-        <canvas
-          ref={canvasRef}
-          onMouseDown={startDrawing}
-          onMouseUp={stopDrawing}
-          onMouseOut={stopDrawing}
-          onMouseMove={draw}
-          onTouchStart={startDrawing}
-          onTouchEnd={stopDrawing}
-          onTouchMove={draw}
-          style={{ width: "100%", height: "150px", cursor: "crosshair", display: "block", touchAction: "none" }}
-        />
+
+      <div
+        style={{
+          border: "1px solid #cbd5e1",
+          borderRadius: "10px",
+          overflow: "hidden",
+          background: "white",
+          boxShadow: "inset 0 1px 4px rgba(0,0,0,0.06)",
+          cursor: "crosshair",
+        }}
+      >
+        {/* Subtle guide text shown only when empty */}
+        <div style={{ position: "relative" }}>
+          {isEmpty && (
+            <div
+              style={{
+                position: "absolute",
+                inset: 0,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                pointerEvents: "none",
+                color: "#cbd5e1",
+                fontSize: "14px",
+                fontStyle: "italic",
+                letterSpacing: "0.5px",
+                userSelect: "none",
+              }}
+            >
+              Sign here ✍️
+            </div>
+          )}
+          <canvas
+            ref={canvasRef}
+            onMouseDown={onMouseDown}
+            onMouseMove={onMouseMove}
+            onMouseUp={onMouseUp}
+            onMouseLeave={onMouseUp}
+            onTouchStart={onTouchStart}
+            onTouchMove={onTouchMove}
+            onTouchEnd={onTouchEnd}
+            style={{
+              width: "100%",
+              height: "150px",
+              display: "block",
+              touchAction: "none",
+            }}
+          />
+        </div>
       </div>
-      <button type="button" onClick={clear} style={{ marginTop: "8px", padding: "6px 16px", fontSize: "13px", borderRadius: "6px", border: "1px solid #94a3b8", background: "#f8fafc", color: "#475569", cursor: "pointer", fontWeight: "600" }}>
-        ↺ Clear Signature
-      </button>
+
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "8px" }}>
+        <button
+          type="button"
+          onClick={clear}
+          style={{
+            padding: "6px 16px",
+            fontSize: "13px",
+            borderRadius: "6px",
+            border: "1px solid #94a3b8",
+            background: "#f8fafc",
+            color: "#475569",
+            cursor: "pointer",
+            fontWeight: "600",
+            display: "flex",
+            alignItems: "center",
+            gap: "5px",
+          }}
+        >
+          ↺ Clear Signature
+        </button>
+        {!isEmpty && (
+          <span style={{ fontSize: "12px", color: "#10b981", fontWeight: "600" }}>
+            ✓ Signed
+          </span>
+        )}
+      </div>
     </div>
   );
 }

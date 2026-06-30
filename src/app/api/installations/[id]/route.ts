@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
-import { PrismaClient } from "@prisma/client";
+import prisma from "@/lib/prisma";
 
-const prisma = new PrismaClient();
 
 export async function DELETE(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
@@ -15,8 +14,9 @@ export async function DELETE(req: Request, { params }: { params: Promise<{ id: s
     }
 
     // Verify Master Deletion Password
-    const masterPassword = process.env.MASTER_DELETE_PASSWORD;
-    if (!masterPassword || body.password !== masterPassword) {
+    const masterPassword = (process.env.MASTER_DELETE_PASSWORD || "").trim();
+    const submittedPassword = (body.password || "").trim();
+    if (!masterPassword || submittedPassword !== masterPassword) {
       return NextResponse.json({ error: "Unauthorized: Incorrect deletion password." }, { status: 401 });
     }
     

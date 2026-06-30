@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { PrismaClient } from "@prisma/client";
+import prisma from "@/lib/prisma";
 import PizZip from "pizzip";
 import Docxtemplater from "docxtemplater";
 // @ts-ignore
@@ -7,7 +7,6 @@ import ImageModule from "docxtemplater-image-module-free";
 import fs from "fs";
 import path from "path";
 
-const prisma = new PrismaClient();
 
 // Helper function to fetch HTTP images and convert them to Base64 strings for docxtemplater
 async function fetchImageBuffer(url: string | null | undefined): Promise<string> {
@@ -159,8 +158,10 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
       })),
 
       // Signatures (Use the tag names {%consumer_signature} and {%vendor_signature} in Word)
+      geo_photo: await fetchImageBuffer(consumer.geoTaggedPhotoUrl),
       consumer_signature: await fetchImageBuffer(consumer.signatures?.consumerSignature),
-      vendor_signature: await fetchImageBuffer(consumer.signatures?.vendorSignature)
+      vendor_signature: await fetchImageBuffer(consumer.signatures?.vendorSignature),
+      witness2_signature: await fetchImageBuffer(consumer.signatures?.witness2Signature)
     };
 
     doc.render(data);

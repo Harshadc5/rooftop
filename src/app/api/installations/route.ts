@@ -1,8 +1,9 @@
 import { NextResponse } from "next/server";
-import { PrismaClient } from "@prisma/client";
+import prisma from "@/lib/prisma";
 import { createClient } from "@supabase/supabase-js";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
 
-const prisma = new PrismaClient();
 
 // Helper function to decode Base64 and upload to Supabase Bucket
 async function uploadBase64ToBucket(base64Str: string | null, path: string): Promise<string | null> {
@@ -40,6 +41,11 @@ async function uploadBase64ToBucket(base64Str: string | null, path: string): Pro
 
 export async function POST(req: Request) {
   try {
+    const session = await getServerSession(authOptions);
+    if (!session || !session.user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     const data = await req.json();
     
     // Generate a unique prefix for this consumer's files
@@ -50,6 +56,7 @@ export async function POST(req: Request) {
     const geoTaggedPhotoUrl = await uploadBase64ToBucket(data.geoTaggedPhotoUrl, `${consumerPrefix}/geo_photo.jpg`);
     const consumerSignature = await uploadBase64ToBucket(data.consumerSignature, `${consumerPrefix}/consumer_sig.png`);
     const vendorSignature = await uploadBase64ToBucket(data.vendorSignature, `${consumerPrefix}/vendor_sig.png`);
+    const witness2Signature = await uploadBase64ToBucket(data.witness2Signature, `${consumerPrefix}/witness2_sig.png`);
     
     // Process all panel images concurrently
     const processedModules = await Promise.all((data.modules || []).map(async (m: any, index: number) => {
@@ -64,7 +71,7 @@ export async function POST(req: Request) {
     // Save only the clean, lightweight URLs to the PostgreSQL Database
     const newConsumer = await prisma.consumer.create({
       data: {
-        fitterId: data.session.user.id,
+        fitterId: (session.user as any).id || "unknown_fitter",
         installerName: data.installerName,
         installerContact: data.installerContact,
         consumerName: data.consumerName,
@@ -111,7 +118,8 @@ export async function POST(req: Request) {
         signatures: {
           create: {
             consumerSignature: consumerSignature,
-            vendorSignature: vendorSignature
+            vendorSignature: vendorSignature,
+            witness2Signature: witness2Signature
           }
         }
       }
