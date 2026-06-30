@@ -107,19 +107,8 @@ export default function DashboardClient({ initialConsumers }: { initialConsumers
     document.body.removeChild(link);
   };
 
-  const handleBulkDelete = async () => {
-    if (window.confirm(`Are you sure you want to permanently delete ${selectedIds.size} records?`)) {
-      try {
-        const idsToDelete = Array.from(selectedIds);
-        // Delete them concurrently
-        await Promise.all(
-          idsToDelete.map(id => fetch(`/api/installations/${id}`, { method: 'DELETE' }))
-        );
-        window.location.reload();
-      } catch (e) {
-        alert("Error during bulk delete.");
-      }
-    }
+  const handleBulkDelete = () => {
+    setDeleteCandidate({ id: "BULK", name: `${selectedIds.size} selected records` });
   };
 
   // --- Analytics Calculations ---
@@ -151,22 +140,41 @@ export default function DashboardClient({ initialConsumers }: { initialConsumers
   const confirmDelete = async () => {
     if (!deleteCandidate) return;
     try {
-      const res = await fetch(`/api/installations/${deleteCandidate.id}`, { 
-        method: 'DELETE',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ password: deletePassword })
-      });
-      if (res.ok) {
-        window.location.reload();
+      if (deleteCandidate.id === "BULK") {
+        const idsToDelete = Array.from(selectedIds);
+        const results = await Promise.all(
+          idsToDelete.map(id => fetch(`/api/installations/${id}`, { 
+            method: 'DELETE',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ password: deletePassword })
+          }))
+        );
+        const failed = results.filter(r => !r.ok);
+        if (failed.length > 0) {
+           const data = await failed[0].json().catch(() => ({}));
+           alert(data.error || `Failed to delete ${failed.length} records. Incorrect password?`);
+        } else {
+           window.location.reload();
+        }
       } else {
-        const data = await res.json();
-        alert(data.error || "Failed to delete record.");
+        const res = await fetch(`/api/installations/${deleteCandidate.id}`, { 
+          method: 'DELETE',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ password: deletePassword })
+        });
+        if (res.ok) {
+          window.location.reload();
+        } else {
+          const data = await res.json();
+          alert(data.error || "Failed to delete record.");
+        }
       }
     } catch (e) {
       alert("Error deleting record.");
     } finally {
       setDeleteCandidate(null);
       setDeletePassword("");
+      setSelectedIds(new Set());
     }
   };
 
