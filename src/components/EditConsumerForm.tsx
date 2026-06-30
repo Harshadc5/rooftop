@@ -31,6 +31,14 @@ export default function EditConsumerForm({ initialData }: { initialData: any }) 
   // Geo Photo State
   const [geoPhoto, setGeoPhoto] = useState(initialData.geoTaggedPhotoUrl || "");
 
+  const openBase64ImageInNewTab = (e: React.MouseEvent, base64Url: string) => {
+    e.preventDefault();
+    const newWindow = window.open();
+    if (newWindow) {
+      newWindow.document.write(`<body style="margin:0;display:flex;justify-content:center;align-items:center;background:#0f172a;height:100vh;"><img src="${base64Url}" style="max-width:100%;max-height:100vh;" /></body>`);
+    }
+  };
+
   const updateModuleCount = (val: string) => {
     const count = val ? parseInt(val) : "";
     setModuleCount(count);
@@ -271,7 +279,7 @@ export default function EditConsumerForm({ initialData }: { initialData: any }) 
                       
                       {mod.almmImageUrl && (
                         <div style={{ flexShrink: 0 }}>
-                          <a href={mod.almmImageUrl} target="_blank" rel="noreferrer" title="Click to view full photo">
+                          <a href="#" onClick={(e) => openBase64ImageInNewTab(e, mod.almmImageUrl!)} title="Click to view full photo">
                             <img src={mod.almmImageUrl} alt="ALMM Upload" style={{ width: "60px", height: "60px", borderRadius: "8px", objectFit: "cover", border: "1px solid #cbd5e1" }} />
                           </a>
                         </div>
