@@ -12,23 +12,32 @@ export async function GET(req: Request) {
     const lonNum = parseFloat(lon);
     
     const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
+    let response;
     let url = "";
 
-    if (apiKey) {
-      url = `https://maps.googleapis.com/maps/api/staticmap?center=${latNum},${lonNum}&zoom=18&size=256x256&maptype=satellite&key=${apiKey}&markers=color:red%7C${latNum},${lonNum}`;
-    } else {
+    const fetchEsri = async () => {
       // Calculate OSM Tile X and Y from Lat/Lon
       const zoom = 17;
       const n = Math.pow(2, zoom);
       const x = Math.floor((lonNum + 180) / 360 * n);
       const latRad = latNum * Math.PI / 180;
       const y = Math.floor((1 - Math.log(Math.tan(latRad) + 1 / Math.cos(latRad)) / Math.PI) / 2 * n);
+      const esriUrl = `https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/${zoom}/${y}/${x}`;
+      return await fetch(esriUrl, { headers: { 'User-Agent': 'Rooftop-Solar-App/1.0' } });
+    };
 
-      // Fetch the direct 256x256 satellite map tile (Esri World Imagery)
-      url = `https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/${zoom}/${y}/${x}`;
+    if (apiKey) {
+      url = `https://maps.googleapis.com/maps/api/staticmap?center=${latNum},${lonNum}&zoom=18&size=256x256&maptype=satellite&key=${apiKey}&markers=color:red%7C${latNum},${lonNum}`;
+      response = await fetch(url);
+      
+      // If Google Maps fails (e.g. billing issue), fallback to Esri
+      if (!response.ok) {
+        console.warn("Google Maps Static API failed, falling back to Esri Satellite...", response.statusText);
+        response = await fetchEsri();
+      }
+    } else {
+      response = await fetchEsri();
     }
-    
-    const response = await fetch(url, { headers: { 'User-Agent': 'Rooftop-Solar-App/1.0' } });
     
     if (!response.ok) {
       throw new Error(`Failed to fetch map tile: ${response.statusText}`);

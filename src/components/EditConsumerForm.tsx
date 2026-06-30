@@ -164,6 +164,15 @@ export default function EditConsumerForm({ initialData }: { initialData: any }) 
         }}
       >
         
+        {/* SECTION 0: Installer Details */}
+        <h2 style={{ fontSize: "22px", color: "var(--primary)", borderBottom: "1px solid var(--glass-border)", paddingBottom: "10px", marginBottom: "20px" }}>
+          Installer Details
+        </h2>
+        <div className="responsive-grid-2" style={{ marginBottom: "40px", padding: "20px", background: "rgba(255,255,255,0.02)", borderRadius: "12px", border: "1px solid rgba(255,255,255,0.05)" }}>
+          <div className="form-group"><label className="form-label">Installer Name</label><input type="text" name="installerName" defaultValue={initialData.installerName || ""} className="input-field" placeholder="e.g. Ramesh Kumar" required /></div>
+          <div className="form-group"><label className="form-label">Installer Contact</label><input type="tel" name="installerContact" defaultValue={initialData.installerContact || ""} className="input-field" pattern="\d{10}" title="Must be exactly 10 digits" maxLength={10} placeholder="e.g. 9876543210" required /></div>
+        </div>
+
         {/* SECTION 1: Consumer Details */}
         <h2 style={{ fontSize: "22px", color: "var(--primary)", borderBottom: "1px solid var(--glass-border)", paddingBottom: "10px", marginBottom: "20px" }}>
           1. Consumer Details
@@ -226,14 +235,28 @@ export default function EditConsumerForm({ initialData }: { initialData: any }) 
         </h2>
         <div className="responsive-grid-2" style={{ marginBottom: "20px" }}>
           <div className="form-group"><label className="form-label">Inverter Make</label><input type="text" name="inverterMake" defaultValue={initialData.inverterMake} className="input-field" required /></div>
-          <div className="form-group"><label className="form-label">Inverter Model</label><input type="text" name="inverterModel" defaultValue={initialData.inverterModel} className="input-field" required /></div>
+          <div className="form-group" style={{ gridColumn: "1 / -1", display: "flex", gap: "10px", alignItems: "flex-end" }}>
+            <div style={{ flex: 1 }}>
+              <label className="form-label">Inverter Model Barcode</label>
+              <input type="text" name="inverterModel" defaultValue={initialData.inverterModel} className="input-field" required />
+            </div>
+            {initialData.inverterImageUrl && (
+              <div style={{ width: "45px", height: "45px", borderRadius: "8px", overflow: "hidden", border: "1px solid #cbd5e1", flexShrink: 0 }}>
+                <img src={initialData.inverterImageUrl} alt="Inverter Barcode" style={{ width: "100%", height: "100%", objectFit: "cover", cursor: "pointer" }} onClick={(e) => {
+                  const newWindow = window.open();
+                  if (newWindow) newWindow.document.write(`<body style="margin:0;display:flex;justify-content:center;align-items:center;background:#0f172a;height:100vh;"><img src="${initialData.inverterImageUrl}" style="max-width:100%;max-height:100vh;" /></body>`);
+                }} />
+              </div>
+            )}
+            <input type="hidden" name="inverterImageUrl" value={initialData.inverterImageUrl || ""} />
+          </div>
           <div className="form-group"><label className="form-label">Inverter Capacity (KW)</label><input type="number" step="0.1" name="inverterCapacity" defaultValue={initialData.inverterCapacity} className="input-field" required /></div>
           <div className="form-group"><label className="form-label">SolarPV Details - Inverter Capacity</label><input type="text" name="capacityOfInverter" defaultValue={initialData.capacityOfInverter || ""} className="input-field" placeholder="e.g. 5 KW" /></div>
           <div className="form-group"><label className="form-label">Inverter Year of Manufacture</label><input type="number" min="2000" max="2100" name="inverterYom" defaultValue={initialData.inverterYom} className="input-field" required /></div>
           
           <div className="form-group"><label className="form-label">Module Make</label><input type="text" name="moduleMake" defaultValue={initialData.moduleMake} className="input-field" required /></div>
           <div className="form-group"><label className="form-label">Wattage per Module (W)</label><input type="number" name="moduleCapacity" defaultValue={initialData.moduleCapacity} className="input-field" required /></div>
-          <div className="form-group"><label className="form-label">SolarPV Details - Module Capacity (KW)</label><input type="text" name="moduleCapacityKw" defaultValue={initialData.moduleCapacityKw || ""} className="input-field" placeholder="e.g. 3240 w" /></div>
+          <div className="form-group"><label className="form-label">SolarPV Details - Module Capacity (W)</label><input type="text" name="moduleCapacityKw" defaultValue={initialData.moduleCapacityKw || ""} className="input-field" placeholder="e.g. 3240" /></div>
           <div className="form-group"><label className="form-label">Cell Manufacturer's Name</label><input type="text" name="cellManufacturer" defaultValue={initialData.cellManufacturer} className="input-field" required /></div>
           <div className="form-group">
             <label className="form-label" style={{ color: "var(--primary)" }}>Number of Modules (Panels)</label>

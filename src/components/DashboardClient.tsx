@@ -3,6 +3,7 @@ import { useState } from "react";
 
 export default function DashboardClient({ initialConsumers }: { initialConsumers: any[] }) {
   const [searchTerm, setSearchTerm] = useState("");
+  const [installerFilter, setInstallerFilter] = useState("");
   const [selectedConsumer, setSelectedConsumer] = useState<any | null>(null);
   
   // Pagination State
@@ -16,11 +17,15 @@ export default function DashboardClient({ initialConsumers }: { initialConsumers
   const [deleteCandidate, setDeleteCandidate] = useState<{ id: string, name: string } | null>(null);
   const [deletePassword, setDeletePassword] = useState("");
 
-  const filteredConsumers = initialConsumers.filter(c => 
-    c.consumerName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    c.mobileNumber?.includes(searchTerm) ||
-    c.consumerNumber?.includes(searchTerm)
-  );
+  const filteredConsumers = initialConsumers.filter(c => {
+    const matchesSearch = c.consumerName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                          c.mobileNumber?.includes(searchTerm) ||
+                          c.consumerNumber?.includes(searchTerm);
+    const matchesInstaller = installerFilter ? c.installerName === installerFilter : true;
+    return matchesSearch && matchesInstaller;
+  });
+
+  const uniqueInstallers = Array.from(new Set(initialConsumers.map(c => c.installerName).filter(Boolean))) as string[];
 
   // Pagination Logic
   const totalPages = Math.ceil(filteredConsumers.length / itemsPerPage);
@@ -59,7 +64,7 @@ export default function DashboardClient({ initialConsumers }: { initialConsumers
 
   const exportToCSV = () => {
     const headers = [
-      "S.No.", "Consumer Name", "Mobile Number", "Email", "Application Date", 
+      "S.No.", "Installer Name", "Installer Contact", "Consumer Name", "Mobile Number", "Email", "Application Date", 
       "Installation Date", "Consumer Number", "Address", "City", "District", 
       "State", "Zip Code", "Category", "Sanction Number", "Capacity (KW)", 
       "Inverter Make", "Inverter Model", "Inverter Capacity (KW)", "Module Make", 
@@ -69,6 +74,8 @@ export default function DashboardClient({ initialConsumers }: { initialConsumers
     
     const rows = filteredConsumers.map((c, idx) => [
       idx + 1,
+      `"${c.installerName || ""}"`,
+      `"${c.installerContact || ""}"`,
       `"${c.consumerName || ""}"`,
       `"${c.mobileNumber || ""}"`,
       `"${c.email || ""}"`,
@@ -303,16 +310,31 @@ export default function DashboardClient({ initialConsumers }: { initialConsumers
           </button>
         </div>
         
-        <input 
-          type="text" 
-          placeholder="Search consumers..." 
-          value={searchTerm} 
-          onChange={e => {
-            setSearchTerm(e.target.value);
-            setCurrentPage(1);
-          }} 
-          style={{ width: "100%", maxWidth: "300px", padding: "10px 15px", borderRadius: "8px", border: "1px solid rgba(255,255,255,0.2)", background: "rgba(255,255,255,0.05)", color: "white", outline: "none" }} 
-        />
+        <div style={{ display: "flex", gap: "15px", width: "100%", maxWidth: "500px" }}>
+          <select
+            value={installerFilter}
+            onChange={e => {
+              setInstallerFilter(e.target.value);
+              setCurrentPage(1);
+            }}
+            style={{ flex: 1, padding: "10px 15px", borderRadius: "8px", border: "1px solid rgba(255,255,255,0.2)", background: "rgba(255,255,255,0.05)", color: "white", outline: "none" }}
+          >
+            <option value="" style={{ color: "black" }}>All Installers</option>
+            {uniqueInstallers.map(installer => (
+              <option key={installer} value={installer} style={{ color: "black" }}>{installer}</option>
+            ))}
+          </select>
+          <input 
+            type="text" 
+            placeholder="Search consumers..." 
+            value={searchTerm} 
+            onChange={e => {
+              setSearchTerm(e.target.value);
+              setCurrentPage(1);
+            }} 
+            style={{ flex: 1, padding: "10px 15px", borderRadius: "8px", border: "1px solid rgba(255,255,255,0.2)", background: "rgba(255,255,255,0.05)", color: "white", outline: "none" }} 
+          />
+        </div>
       </div>
       
       {filteredConsumers.length === 0 ? (
@@ -333,10 +355,10 @@ export default function DashboardClient({ initialConsumers }: { initialConsumers
                   />
                 </th>
                 <th style={{ padding: "12px 15px", color: "#94a3b8" }}>S.No.</th>
+                <th style={{ padding: "12px 15px", color: "#94a3b8" }}>Installer</th>
                 <th style={{ padding: "12px 15px", color: "#94a3b8" }}>Consumer Name</th>
                 <th style={{ padding: "12px 15px", color: "#94a3b8" }}>Mobile</th>
                 <th style={{ padding: "12px 15px", color: "#94a3b8" }}>Date</th>
-                <th style={{ padding: "12px 15px", color: "#94a3b8" }}>Panels</th>
                 <th style={{ padding: "12px 15px", color: "#94a3b8" }}>Action</th>
               </tr>
             </thead>
@@ -352,17 +374,10 @@ export default function DashboardClient({ initialConsumers }: { initialConsumers
                     />
                   </td>
                   <td style={{ padding: "12px 15px", color: "#cbd5e1", fontSize: "14px" }}>{filteredConsumers.length - ((currentPage - 1) * itemsPerPage + index)}</td>
+                  <td style={{ padding: "12px 15px", color: "#cbd5e1", fontSize: "14px" }}>{c.installerName || "N/A"}</td>
                   <td style={{ padding: "12px 15px", fontWeight: "500", fontSize: "14px", maxWidth: "200px", overflow: "hidden", textOverflow: "ellipsis" }}>{c.consumerName}</td>
                   <td style={{ padding: "12px 15px", color: "#cbd5e1", fontSize: "14px" }}>{c.mobileNumber}</td>
                   <td style={{ padding: "12px 15px", color: "#cbd5e1", fontSize: "14px" }}>{c.dateOfApplication}</td>
-                  <td style={{ padding: "12px 15px", color: "#cbd5e1", fontSize: "14px" }}>
-                    {c.moduleCount}
-                    {c.modules.some((m: any) => !m.almmNumber && m.almmImageUrl) && (
-                      <span title="Missing ALMM text (photo uploaded)" style={{ marginLeft: "8px", color: "#f59e0b", display: "inline-flex", alignItems: "center", cursor: "help" }}>
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
-                      </span>
-                    )}
-                  </td>
                   <td style={{ padding: "12px 15px", display: "flex", gap: "8px", alignItems: "center" }}>
                     <a href={`/api/generate/${c.id}/WCR`} className="btn-primary" style={{ padding: "6px 10px", fontSize: "12px", textDecoration: "none", background: "#3b82f6", borderRadius: "4px" }}>WCR</a>
                     <a href={`/api/generate/${c.id}/ANNEXURE_1`} className="btn-primary" style={{ padding: "6px 10px", fontSize: "12px", textDecoration: "none", background: "#10b981", borderRadius: "4px" }}>Anx 1</a>

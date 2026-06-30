@@ -10,6 +10,7 @@ export default function FitterPortal() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isLocating, setIsLocating] = useState(false);
   const [scanningModuleIndex, setScanningModuleIndex] = useState<number | null>(null);
+  const [isScanningInverter, setIsScanningInverter] = useState(false);
 
   // General Details State
   const [address, setAddress] = useState("");
@@ -20,7 +21,10 @@ export default function FitterPortal() {
 
   // Equipment State
   const [moduleCount, setModuleCount] = useState<number | "">("");
+  const [moduleCapacity, setModuleCapacity] = useState<number | "">("");
   const [modules, setModules] = useState<{ serialNumber: string, almmNumber: string, almmImageUrl: string | null }[]>([]);
+  const [inverterModel, setInverterModel] = useState("");
+  const [inverterImageUrl, setInverterImageUrl] = useState<string | null>(null);
 
   // Signature State
   const [consumerSignature, setConsumerSignature] = useState("");
@@ -34,27 +38,41 @@ export default function FitterPortal() {
   const [geoPhoto, setGeoPhoto] = useState("");
 
   const handleAadharUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    handleImageUpload(e, 1000, 0.7, setAadharPhoto);
+  };
+
+  const handleGeoPhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    handleImageUpload(e, 1000, 0.7, setGeoPhoto);
+  };
+
+  const handleInverterImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    handleImageUpload(e, 800, 0.6, setInverterImageUrl);
+  };
+
+  const handleAlmmImageUpload = (index: number, e: React.ChangeEvent<HTMLInputElement>) => {
+    handleImageUpload(e, 800, 0.6, (dataUrl) => updateModule(index, "almmImageUrl", dataUrl));
+  };
+
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>, maxDim: number, quality: number, callback: (dataUrl: string) => void) => {
     const file = e.target.files?.[0];
     if (file) {
       const reader = new FileReader();
       reader.onloadend = () => {
-        // Compress the uploaded image via an off-screen canvas to prevent 500 Payload Too Large errors
         const img = new window.Image();
         img.onload = () => {
           const canvas = document.createElement("canvas");
-          const MAX_DIM = 1000;
           let scale = 1;
-          if (img.width > MAX_DIM || img.height > MAX_DIM) {
-            scale = Math.min(MAX_DIM / img.width, MAX_DIM / img.height);
+          if (img.width > maxDim || img.height > maxDim) {
+            scale = Math.min(maxDim / img.width, maxDim / img.height);
           }
           canvas.width = img.width * scale;
           canvas.height = img.height * scale;
           const ctx = canvas.getContext("2d");
           if (ctx) {
             ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-            setAadharPhoto(canvas.toDataURL("image/jpeg", 0.7));
+            callback(canvas.toDataURL("image/jpeg", quality));
           } else {
-            setAadharPhoto(reader.result as string); // fallback
+            callback(reader.result as string); // fallback
           }
         };
         img.src = reader.result as string;
@@ -63,32 +81,7 @@ export default function FitterPortal() {
     }
   };
 
-  const handleAlmmImageUpload = (index: number, e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        const img = new window.Image();
-        img.onload = () => {
-          const canvas = document.createElement("canvas");
-          const MAX_DIM = 800; // Smaller dimension for ALMM stickers to save space
-          let scale = 1;
-          if (img.width > MAX_DIM || img.height > MAX_DIM) {
-            scale = Math.min(MAX_DIM / img.width, MAX_DIM / img.height);
-          }
-          canvas.width = img.width * scale;
-          canvas.height = img.height * scale;
-          const ctx = canvas.getContext("2d");
-          if (ctx) {
-            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-            updateModule(index, "almmImageUrl", canvas.toDataURL("image/jpeg", 0.6));
-          }
-        };
-        img.src = reader.result as string;
-      };
-      reader.readAsDataURL(file);
-    }
-  };
+
 
   useEffect(() => {
     if (typeof moduleCount === "number" && moduleCount > 0) {
@@ -122,6 +115,18 @@ export default function FitterPortal() {
             return clean.replace(/,\s*,/g, ',').replace(/\s+/g, ' ').replace(/^,\s*/, '').replace(/,\s*$/, '').trim(); // Clean up leftover commas
           };
 
+          const tryNominatimFallback = async (pos: GeolocationPosition) => {
+            const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${pos.coords.latitude}&lon=${pos.coords.longitude}&zoom=18&addressdetails=1&accept-language=en`);
+            const data = await res.json();
+            if (data.address) {
+              setCity(cleanEnglishText(data.address.city || data.address.town || data.address.village || data.address.suburb || ""));
+              setDistrict(cleanEnglishText(data.address.state_district || data.address.county || ""));
+              setState(cleanEnglishText(data.address.state || ""));
+              setZipCode(cleanEnglishText(data.address.postcode || ""));
+              setAddress(cleanEnglishText(data.display_name || ""));
+            }
+          };
+
           const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
           
           if (apiKey) {
@@ -137,21 +142,14 @@ export default function FitterPortal() {
               setZipCode(cleanEnglishText(getComponent("postal_code")));
               setAddress(cleanEnglishText(data.results[0].formatted_address));
             } else if (data.error_message) {
-              alert("Google Maps API Error: " + data.error_message);
+              console.warn("Google Maps API Error, falling back to free provider:", data.error_message);
+              await tryNominatimFallback(position);
             } else {
-              alert("Google Maps API returned no results.");
+              await tryNominatimFallback(position);
             }
           } else {
-            // Fallback to Nominatim
-            const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${position.coords.latitude}&lon=${position.coords.longitude}&zoom=18&addressdetails=1&accept-language=en`);
-            const data = await res.json();
-            if (data.address) {
-              setCity(cleanEnglishText(data.address.city || data.address.town || data.address.village || data.address.suburb || ""));
-              setDistrict(cleanEnglishText(data.address.state_district || data.address.county || ""));
-              setState(cleanEnglishText(data.address.state || ""));
-              setZipCode(cleanEnglishText(data.address.postcode || ""));
-              setAddress(cleanEnglishText(data.display_name || ""));
-            }
+            // Fallback to Nominatim if no API key
+            await tryNominatimFallback(position);
           }
         } catch (err) {
           alert("Failed to get address from coordinates.");
@@ -182,7 +180,8 @@ export default function FitterPortal() {
     // Add the dynamic modules state to the payload
     const payload = {
       ...data,
-      modules: modules
+      modules: modules,
+      inverterImageUrl: inverterImageUrl
     };
 
     try {
@@ -197,10 +196,13 @@ export default function FitterPortal() {
         (e.target as HTMLFormElement).reset(); // Clear form
         setModules([]);
         setModuleCount("");
+        setModuleCapacity("");
         setConsumerSignature("");
         setVendorSignature("");
         setAadharPhoto(null);
         setGeoPhoto("");
+        setInverterModel("");
+        setInverterImageUrl(null);
 
         // Clear controlled address state fields
         setAddress("");
@@ -243,6 +245,15 @@ export default function FitterPortal() {
           }
         }}
       >
+
+        {/* SECTION 0: Installer Details */}
+        <h2 style={{ fontSize: "22px", color: "var(--primary)", borderBottom: "1px solid var(--glass-border)", paddingBottom: "10px", marginBottom: "20px" }}>
+          Installer Details
+        </h2>
+        <div className="responsive-grid-2" style={{ marginBottom: "40px", padding: "20px", background: "rgba(255,255,255,0.02)", borderRadius: "12px", border: "1px solid rgba(255,255,255,0.05)" }}>
+          <div className="form-group"><label className="form-label">Installer Name</label><input type="text" name="installerName" className="input-field" placeholder="e.g. Ramesh Kumar" required /></div>
+          <div className="form-group"><label className="form-label">Installer Contact</label><input type="tel" name="installerContact" className="input-field" pattern="\d{10}" title="Must be exactly 10 digits" maxLength={10} placeholder="e.g. 9876543210" required /></div>
+        </div>
 
         {/* SECTION 1: Consumer Details */}
         <h2 style={{ fontSize: "22px", color: "var(--primary)", borderBottom: "1px solid var(--glass-border)", paddingBottom: "10px", marginBottom: "20px" }}>
@@ -320,14 +331,35 @@ export default function FitterPortal() {
         </h2>
         <div className="responsive-grid-2" style={{ marginBottom: "20px" }}>
           <div className="form-group"><label className="form-label">Inverter Make</label><input type="text" name="inverterMake" className="input-field" placeholder="e.g. Warry" required /></div>
-          <div className="form-group"><label className="form-label">Inverter Model</label><input type="text" name="inverterModel" className="input-field" placeholder="e.g. 3K6020226/ 2550-597803694P" required /></div>
+          
+          <div className="form-group" style={{ marginBottom: 0, gridColumn: "1 / -1" }}>
+            <label className="form-label">Inverter Model Barcode (Or upload photo)</label>
+            <div className="stack-on-mobile" style={{ display: "flex", gap: "10px" }}>
+              <button 
+                type="button" 
+                onClick={() => setIsScanningInverter(true)} 
+                style={{ display: "flex", alignItems: "center", gap: "8px", padding: "14px 20px", background: "#3b82f6", color: "white", border: "none", borderRadius: "8px", cursor: "pointer", fontSize: "14px", fontWeight: "bold", whiteSpace: "nowrap" }}
+              >
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>
+                Scan Barcode
+              </button>
+              <input type="text" name="inverterModel" className="input-field" placeholder="e.g. 3K6020226" value={inverterModel} onChange={(e) => setInverterModel(e.target.value)} style={{ flex: 1, minWidth: "250px" }} required />
+              <input type="file" accept="image/*" capture="environment" onChange={handleInverterImageUpload} style={{ width: "100%", maxWidth: "150px", padding: "14px", background: "white", borderRadius: "8px", border: "1px solid #cbd5e1" }} />
+              
+              {/* Show thumbnail if uploaded */}
+              {inverterImageUrl && (
+                <div style={{ width: "45px", height: "45px", borderRadius: "8px", overflow: "hidden", border: "1px solid #cbd5e1", flexShrink: 0 }}>
+                  <img src={inverterImageUrl} alt="Inverter" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                </div>
+              )}
+            </div>
+          </div>
+
           <div className="form-group"><label className="form-label">Inverter Capacity (KW)</label><input type="number" step="0.1" name="inverterCapacity" className="input-field" placeholder="e.g. 5" required /></div>
           <div className="form-group"><label className="form-label">SolarPV Details - Inverter Capacity</label><input type="text" name="capacityOfInverter" className="input-field" placeholder="e.g. 3" /></div>
           <div className="form-group"><label className="form-label">Inverter Year of Manufacture</label><input type="number" min="2000" max="2100" name="inverterYom" className="input-field" placeholder="e.g. 2026" required /></div>
 
           <div className="form-group"><label className="form-label">Module Make</label><input type="text" name="moduleMake" className="input-field" placeholder="e.g. Warry" required /></div>
-          <div className="form-group"><label className="form-label">Wattage per Module (W)</label><input type="number" name="moduleCapacity" className="input-field" placeholder="e.g. 580" required /></div>
-          <div className="form-group"><label className="form-label">SolarPV Details - Module Capacity (KW)</label><input type="text" name="moduleCapacityKw" className="input-field" placeholder="e.g. 3240" /></div>
           <div className="form-group"><label className="form-label">Cell Manufacturer's Name</label><input type="text" name="cellManufacturer" className="input-field" placeholder="e.g. WARRY PVT.LTD" required /></div>
           <div className="form-group">
             <label className="form-label" style={{ color: "var(--primary)" }}>Number of Modules (Panels)</label>
@@ -339,6 +371,30 @@ export default function FitterPortal() {
               value={moduleCount}
               onChange={(e) => setModuleCount(e.target.value ? parseInt(e.target.value) : "")}
               required
+            />
+          </div>
+          <div className="form-group">
+            <label className="form-label">Wattage per Module (W)</label>
+            <input 
+              type="number" 
+              name="moduleCapacity" 
+              className="input-field" 
+              placeholder="e.g. 580" 
+              value={moduleCapacity}
+              onChange={(e) => setModuleCapacity(e.target.value ? parseFloat(e.target.value) : "")}
+              required 
+            />
+          </div>
+          <div className="form-group">
+            <label className="form-label">SolarPV Details - Module Capacity (W)</label>
+            <input 
+              type="text" 
+              name="moduleCapacityKw" 
+              className="input-field" 
+              placeholder="e.g. 3240" 
+              value={(typeof moduleCount === 'number' && typeof moduleCapacity === 'number') ? (moduleCount * moduleCapacity).toString() : ""}
+              readOnly
+              style={{ background: "#f1f5f9", cursor: "not-allowed" }}
             />
           </div>
         </div>
@@ -387,8 +443,21 @@ export default function FitterPortal() {
 
         <div className="form-group" style={{ marginBottom: "40px" }}>
           <label className="form-label">Geo-tagged Photo of Module with Consumer</label>
-          <GeoCamera key={`geo-${resetKey}`} address={address} onCapture={setGeoPhoto} />
-          <input type="hidden" name="geoTaggedPhotoUrl" value={geoPhoto} />
+          <div style={{ background: "rgba(0,0,0,0.1)", padding: "20px", borderRadius: "12px", border: "1px solid rgba(255,255,255,0.1)" }}>
+            <GeoCamera key={`geo-${resetKey}`} address={address} onCapture={setGeoPhoto} />
+            
+            <div style={{ marginTop: "20px", borderTop: "1px solid rgba(255,255,255,0.1)", paddingTop: "20px" }}>
+              <label className="form-label" style={{ fontSize: "14px" }}>Or Manually Upload Photo (Fallback):</label>
+              <div style={{ display: "flex", gap: "15px", alignItems: "center" }}>
+                <input type="file" accept="image/*" capture="environment" onChange={handleGeoPhotoUpload} style={{ width: "100%", maxWidth: "250px", padding: "10px", background: "white", borderRadius: "8px", border: "1px solid #cbd5e1" }} />
+                {geoPhoto && !geoPhoto.includes("maps.googleapis.com") && geoPhoto.length > 100 && (
+                  <div style={{ color: "#10b981", fontSize: "14px", fontWeight: "bold" }}>✓ Uploaded</div>
+                )}
+              </div>
+            </div>
+            
+            <input type="hidden" name="geoTaggedPhotoUrl" value={geoPhoto} />
+          </div>
         </div>
 
         {/* SECTION 4: Signatures */}
@@ -419,6 +488,17 @@ export default function FitterPortal() {
             setScanningModuleIndex(null);
           }}
           onClose={() => setScanningModuleIndex(null)}
+        />
+      )}
+
+      {/* Barcode Scanner Modal for Inverter */}
+      {isScanningInverter && (
+        <BarcodeScanner 
+          onScan={(text) => {
+            setInverterModel(text);
+            setIsScanningInverter(false);
+          }}
+          onClose={() => setIsScanningInverter(false)}
         />
       )}
     </div>

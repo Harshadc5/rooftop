@@ -22,6 +22,8 @@ model Consumer {
   createdAt       DateTime       @default(now())
   
   // General Details
+  installerName   String?
+  installerContact String?
   consumerName    String
   consumerNumber  String
   mobileNumber    String
@@ -53,6 +55,7 @@ model Consumer {
   // Equipment Details
   inverterMake          String
   inverterModel         String
+  inverterImageUrl      String?  // Fallback if barcode is scratched
   inverterCapacity      Float
   capacityOfInverter    String?
   inverterYom           Int

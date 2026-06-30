@@ -67,6 +67,16 @@ export default function GeoCamera({ onCapture, address }: GeoCameraProps) {
       // 2. Reverse Geocode for City, State, Country
       let city = "", state = "", country = "India";
       let fullAddress = address;
+
+      const runNominatimFallback = async () => {
+        const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&zoom=18&addressdetails=1`);
+        const data = await res.json();
+        city = data.address?.city || data.address?.town || data.address?.village || data.address?.county || "";
+        state = data.address?.state || "";
+        country = data.address?.country || "India";
+        if (!fullAddress) fullAddress = data.display_name;
+      };
+
       try {
         const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
         if (apiKey) {
@@ -83,16 +93,14 @@ export default function GeoCamera({ onCapture, address }: GeoCameraProps) {
             state = getComponent("administrative_area_level_1");
             country = getComponent("country") || "India";
           } else if (data.error_message) {
-            alert("Google Maps API Error: " + data.error_message);
+            console.warn("GeoCamera Google API Error, falling back:", data.error_message);
+            await runNominatimFallback();
+          } else {
+            await runNominatimFallback();
           }
         } else {
           // Fallback to Nominatim if API key isn't set yet
-          const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&zoom=18&addressdetails=1`);
-          const data = await res.json();
-          city = data.address?.city || data.address?.town || data.address?.village || data.address?.county || "";
-          state = data.address?.state || "";
-          country = data.address?.country || "India";
-          if (!fullAddress) fullAddress = data.display_name;
+          await runNominatimFallback();
         }
       } catch(e) { console.error("Geocoding failed", e); }
 

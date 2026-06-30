@@ -64,7 +64,9 @@ export async function POST(req: Request) {
     // Save only the clean, lightweight URLs to the PostgreSQL Database
     const newConsumer = await prisma.consumer.create({
       data: {
-        fitterId: "demo-fitter", 
+        fitterId: data.session.user.id,
+        installerName: data.installerName,
+        installerContact: data.installerContact,
         consumerName: data.consumerName,
         consumerNumber: data.consumerNumber,
         mobileNumber: data.mobileNumber,
@@ -93,6 +95,7 @@ export async function POST(req: Request) {
         
         inverterMake: data.inverterMake,
         inverterModel: data.inverterModel,
+        inverterImageUrl: data.inverterImageUrl || null,
         inverterCapacity: parseFloat(data.inverterCapacity),
         capacityOfInverter: data.capacityOfInverter || null,
         inverterYom: parseInt(data.inverterYom),

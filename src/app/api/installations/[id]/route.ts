@@ -39,6 +39,8 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
     const updatedConsumer = await prisma.consumer.update({
       where: { id },
       data: {
+        installerName: body.installerName,
+        installerContact: body.installerContact,
         consumerName: body.consumerName,
         consumerNumber: body.consumerNumber,
         mobileNumber: body.mobileNumber,
@@ -66,6 +68,7 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
         
         inverterMake: body.inverterMake,
         inverterModel: body.inverterModel,
+        inverterImageUrl: body.inverterImageUrl || null,
         inverterCapacity: body.inverterCapacity ? parseFloat(body.inverterCapacity) : 0,
         capacityOfInverter: body.capacityOfInverter,
         inverterYom: body.inverterYom ? parseInt(body.inverterYom, 10) : 0,
