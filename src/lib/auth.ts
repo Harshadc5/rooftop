@@ -11,7 +11,7 @@ export const authOptions: NextAuthOptions = {
       },
       async authorize(credentials) {
         // Hardcoded for demo/local testing. Can be moved to DB later.
-        if (credentials?.username === "admin" && credentials?.password === "admin") {
+        if (credentials?.username === "admin" && credentials?.password === "Mitali") {
           return { id: "1", name: "Admin User", role: "ADMIN" } as any;
         }
         if (credentials?.username === "fitter" && credentials?.password === "fitter") {
