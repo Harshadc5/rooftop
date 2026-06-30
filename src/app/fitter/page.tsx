@@ -116,30 +116,42 @@ export default function FitterPortal() {
     navigator.geolocation.getCurrentPosition(
       async (position) => {
         try {
-          // Added zoom=18 for highest building-level accuracy and accept-language=en to force English results
-          const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${position.coords.latitude}&lon=${position.coords.longitude}&zoom=18&addressdetails=1&accept-language=en`);
-          const data = await res.json();
-          if (data.address) {
-            // Helper to strictly strip out non-English (non-ASCII) characters like Marathi/Hindi scripts
-            const cleanEnglishText = (text: string) => {
-              if (!text) return "";
-              let clean = text.replace(/[^\x00-\x7F]+/g, ''); // Strip non-ASCII
-              return clean.replace(/,\s*,/g, ',').replace(/\s+/g, ' ').replace(/^,\s*/, '').replace(/,\s*$/, '').trim(); // Clean up leftover commas
-            };
+          const cleanEnglishText = (text: string) => {
+            if (!text) return "";
+            let clean = text.replace(/[^\x00-\x7F]+/g, ''); // Strip non-ASCII
+            return clean.replace(/,\s*,/g, ',').replace(/\s+/g, ' ').replace(/^,\s*/, '').replace(/,\s*$/, '').trim(); // Clean up leftover commas
+          };
 
-            const cityStr = cleanEnglishText(data.address.city || data.address.town || data.address.village || data.address.suburb || "");
-            const districtStr = cleanEnglishText(data.address.state_district || data.address.county || "");
-            const stateStr = cleanEnglishText(data.address.state || "");
-            const zipStr = cleanEnglishText(data.address.postcode || "");
-            const countryStr = cleanEnglishText(data.address.country || "India");
-
-            setCity(cityStr);
-            setDistrict(districtStr);
-            setState(stateStr);
-            setZipCode(zipStr);
-
-            // Since the separate UI boxes are now hidden, we MUST place the full detected address (display_name) into the Complete Address box so the user can see everything (City, District, State, Zip).
-            setAddress(cleanEnglishText(data.display_name || ""));
+          const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
+          
+          if (apiKey) {
+            const res = await fetch(`https://maps.googleapis.com/maps/api/geocode/json?latlng=${position.coords.latitude},${position.coords.longitude}&key=${apiKey}`);
+            const data = await res.json();
+            if (data.results && data.results.length > 0) {
+              const addressComponents = data.results[0].address_components;
+              const getComponent = (type: string) => addressComponents.find((c: any) => c.types.includes(type))?.long_name || "";
+              
+              setCity(cleanEnglishText(getComponent("locality") || getComponent("administrative_area_level_3") || getComponent("administrative_area_level_2")));
+              setDistrict(cleanEnglishText(getComponent("administrative_area_level_2")));
+              setState(cleanEnglishText(getComponent("administrative_area_level_1")));
+              setZipCode(cleanEnglishText(getComponent("postal_code")));
+              setAddress(cleanEnglishText(data.results[0].formatted_address));
+            } else if (data.error_message) {
+              alert("Google Maps API Error: " + data.error_message);
+            } else {
+              alert("Google Maps API returned no results.");
+            }
+          } else {
+            // Fallback to Nominatim
+            const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${position.coords.latitude}&lon=${position.coords.longitude}&zoom=18&addressdetails=1&accept-language=en`);
+            const data = await res.json();
+            if (data.address) {
+              setCity(cleanEnglishText(data.address.city || data.address.town || data.address.village || data.address.suburb || ""));
+              setDistrict(cleanEnglishText(data.address.state_district || data.address.county || ""));
+              setState(cleanEnglishText(data.address.state || ""));
+              setZipCode(cleanEnglishText(data.address.postcode || ""));
+              setAddress(cleanEnglishText(data.display_name || ""));
+            }
           }
         } catch (err) {
           alert("Failed to get address from coordinates.");

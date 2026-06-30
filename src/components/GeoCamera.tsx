@@ -68,12 +68,32 @@ export default function GeoCamera({ onCapture, address }: GeoCameraProps) {
       let city = "", state = "", country = "India";
       let fullAddress = address;
       try {
-        const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&zoom=18&addressdetails=1`);
-        const data = await res.json();
-        city = data.address?.city || data.address?.town || data.address?.village || data.address?.county || "";
-        state = data.address?.state || "";
-        country = data.address?.country || "India";
-        if (!fullAddress) fullAddress = data.display_name;
+        const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
+        if (apiKey) {
+          const res = await fetch(`https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lon}&key=${apiKey}`);
+          const data = await res.json();
+          if (data.results && data.results.length > 0) {
+            fullAddress = data.results[0].formatted_address;
+            
+            // Extract components for title
+            const addressComponents = data.results[0].address_components;
+            const getComponent = (type: string) => addressComponents.find((c: any) => c.types.includes(type))?.long_name || "";
+            
+            city = getComponent("locality") || getComponent("administrative_area_level_3") || getComponent("administrative_area_level_2");
+            state = getComponent("administrative_area_level_1");
+            country = getComponent("country") || "India";
+          } else if (data.error_message) {
+            alert("Google Maps API Error: " + data.error_message);
+          }
+        } else {
+          // Fallback to Nominatim if API key isn't set yet
+          const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&zoom=18&addressdetails=1`);
+          const data = await res.json();
+          city = data.address?.city || data.address?.town || data.address?.village || data.address?.county || "";
+          state = data.address?.state || "";
+          country = data.address?.country || "India";
+          if (!fullAddress) fullAddress = data.display_name;
+        }
       } catch(e) { console.error("Geocoding failed", e); }
 
       const title = `${city}, ${state}, ${country}`.replace(/^, /, "").replace(/, ,/g, ","); // Removed emoji to fix Windows rendering issues

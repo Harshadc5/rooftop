@@ -11,15 +11,22 @@ export async function GET(req: Request) {
     const latNum = parseFloat(lat);
     const lonNum = parseFloat(lon);
     
-    // Calculate OSM Tile X and Y from Lat/Lon
-    const zoom = 17; // Increased zoom for better satellite detail
-    const n = Math.pow(2, zoom);
-    const x = Math.floor((lonNum + 180) / 360 * n);
-    const latRad = latNum * Math.PI / 180;
-    const y = Math.floor((1 - Math.log(Math.tan(latRad) + 1 / Math.cos(latRad)) / Math.PI) / 2 * n);
+    const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
+    let url = "";
 
-    // Fetch the direct 256x256 satellite map tile (Esri World Imagery)
-    const url = `https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/${zoom}/${y}/${x}`;
+    if (apiKey) {
+      url = `https://maps.googleapis.com/maps/api/staticmap?center=${latNum},${lonNum}&zoom=18&size=256x256&maptype=satellite&key=${apiKey}&markers=color:red%7C${latNum},${lonNum}`;
+    } else {
+      // Calculate OSM Tile X and Y from Lat/Lon
+      const zoom = 17;
+      const n = Math.pow(2, zoom);
+      const x = Math.floor((lonNum + 180) / 360 * n);
+      const latRad = latNum * Math.PI / 180;
+      const y = Math.floor((1 - Math.log(Math.tan(latRad) + 1 / Math.cos(latRad)) / Math.PI) / 2 * n);
+
+      // Fetch the direct 256x256 satellite map tile (Esri World Imagery)
+      url = `https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/${zoom}/${y}/${x}`;
+    }
     
     const response = await fetch(url, { headers: { 'User-Agent': 'Rooftop-Solar-App/1.0' } });
     
