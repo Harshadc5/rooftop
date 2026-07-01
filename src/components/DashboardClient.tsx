@@ -63,45 +63,53 @@ export default function DashboardClient({ initialConsumers }: { initialConsumers
   };
 
   const exportToCSV = () => {
+    // Headers follow the exact order of the Installation Form sections
     const headers = [
-      "S.No.", "Installer Name", "Installer Contact", "Consumer Name", "Mobile Number", "Email", "Application Date", 
-      "Installation Date", "Consumer Number", "Address", "City", "District", 
-      "State", "Zip Code", "Category", "Sanction Number", "Capacity (KW)", 
-      "Inverter Make", "Inverter Model", "Inverter Capacity (KW)", "Module Make", 
-      "Module Capacity", "Module Count", "Panel Serial/ALMM Numbers",
-      "Aadhar Photo URL", "Geo-Photo URL", "Consumer Signature URL", "Vendor Signature URL", "Witness 2 Signature URL"
+      // S.No
+      "S.No.",
+      // Installer Details
+      "Installer Name", "Installer Contact",
+      // Section 1: Consumer Details
+      "Consumer Name", "Mobile Number", "Email", "Consumer Number",
+      "Address", "City", "District", "State", "Zip Code",
+      "Aadhar Number",
+      // Section 2: Project & Installation Details
+      "Category", "Sanction Number", "Sanctioned Capacity (KW)", "Capacity of Solar PV (KW)", "Total Capacity (KWP)",
+      "Application Number", "Date of Application", "Installation Date", "Agreement Date",
+      "Project Model", "Earthings Details",
+      // Section 3: Equipment Details
+      "Inverter Make", "Inverter Model", "Inverter Capacity (KW)", "SolarPV Inverter Capacity", "Inverter YOM",
+      "Module Make", "Cell Manufacturer", "No. of Modules", "Wattage per Module (W)", "SolarPV Module Capacity (W)",
+      "Panel Serial / ALMM Numbers",
+      // Photos & Signatures
+      "Aadhar Photo URL", "Inverter Photo URL", "ALMM Photo URLs", "Geo-Photo URL",
+      "Consumer Signature URL", "Vendor Signature URL", "Witness 2 Signature URL"
     ];
     
+    const esc = (val: any) => `"${String(val || "").replace(/"/g, '""')}"`;
+    const linkOrEmpty = (val: any) => val && String(val).startsWith('http') ? esc(val) : esc("");
+
     const rows = filteredConsumers.map((c, idx) => [
       idx + 1,
-      `"${c.installerName || ""}"`,
-      `"${c.installerContact || ""}"`,
-      `"${c.consumerName || ""}"`,
-      `"${c.mobileNumber || ""}"`,
-      `"${c.email || ""}"`,
-      `"${c.dateOfApplication || ""}"`,
-      `"${c.installationDate || ""}"`,
-      `"${c.consumerNumber || ""}"`,
-      `"${c.address || ""}"`,
-      `"${c.city || ""}"`,
-      `"${c.district || ""}"`,
-      `"${c.state || ""}"`,
-      `"${c.zipCode || ""}"`,
-      `"${c.category || ""}"`,
-      `"${c.sanctionNumber || ""}"`,
-      `"${c.capacity || ""}"`,
-      `"${c.inverterMake || ""}"`,
-      `"${c.inverterModel || ""}"`,
-      `"${c.inverterCapacity || ""}"`,
-      `"${c.moduleMake || ""}"`,
-      `"${c.moduleCapacity || ""}"`,
-      `"${c.moduleCount || ""}"`,
-      `"${(c.modules || []).map((m: any) => m.almmNumber || m.serialNumber || "").join(", ")}"`,
-      `"${c.aadharPhotoUrl && c.aadharPhotoUrl.startsWith('http') ? c.aadharPhotoUrl : "No Link"}"`,
-      `"${c.geoTaggedPhotoUrl && c.geoTaggedPhotoUrl.startsWith('http') ? c.geoTaggedPhotoUrl : "No Link"}"`,
-      `"${c.signatures?.consumerSignature && c.signatures.consumerSignature.startsWith('http') ? c.signatures.consumerSignature : "No Link"}"`,
-      `"${c.signatures?.vendorSignature && c.signatures.vendorSignature.startsWith('http') ? c.signatures.vendorSignature : "No Link"}"`,
-      `"${c.signatures?.witness2Signature && c.signatures.witness2Signature.startsWith('http') ? c.signatures.witness2Signature : "No Link"}"`
+      // Installer Details
+      esc(c.installerName), esc(c.installerContact),
+      // Section 1: Consumer Details
+      esc(c.consumerName), esc(c.mobileNumber), esc(c.email), esc(c.consumerNumber),
+      esc(c.address), esc(c.city), esc(c.district), esc(c.state), esc(c.zipCode),
+      esc(c.aadharNumber),
+      // Section 2: Project & Installation Details
+      esc(c.category), esc(c.sanctionNumber), esc(c.sanctionedCapacity), esc(c.capacity), esc(c.totalCapacity),
+      esc(c.applicationNumber), esc(c.dateOfApplication), esc(c.installationDate), esc(c.agreementDate),
+      esc(c.projectModel), esc(c.earthingsDetails),
+      // Section 3: Equipment Details
+      esc(c.inverterMake), esc(c.inverterModel), esc(c.inverterCapacity), esc(c.capacityOfInverter), esc(c.inverterYom),
+      esc(c.moduleMake), esc(c.cellManufacturer), esc(c.moduleCount), esc(c.moduleCapacity), esc(c.moduleCapacityKw),
+      esc((c.modules || []).map((m: any) => m.almmNumber || m.serialNumber || "").join(", ")),
+      // Photos & Signatures
+      linkOrEmpty(c.aadharPhotoUrl), linkOrEmpty(c.inverterImageUrl),
+      esc((c.modules || []).map((m: any) => m.almmImageUrl && m.almmImageUrl.startsWith('http') ? m.almmImageUrl : "").filter(Boolean).join(", ")),
+      linkOrEmpty(c.geoTaggedPhotoUrl),
+      linkOrEmpty(c.signatures?.consumerSignature), linkOrEmpty(c.signatures?.vendorSignature), linkOrEmpty(c.signatures?.witness2Signature)
     ]);
 
     const csvContent = [headers.join(","), ...rows.map(e => e.join(","))].join("\n");
@@ -158,6 +166,35 @@ export default function DashboardClient({ initialConsumers }: { initialConsumers
   const topDistricts = getTopItems("district", 4);
   const topInverters = getTopItems("inverterMake", 4);
   const topPanels = getTopItems("moduleMake", 4);
+
+  // Check for missing important fields in a submission
+  const getMissingFields = (c: any): string[] => {
+    const missing: string[] = [];
+    if (!c.aadharNumber) missing.push("Aadhar Number");
+    if (!c.aadharPhotoUrl) missing.push("Aadhar Photo");
+    if (!c.geoTaggedPhotoUrl) missing.push("Geo Photo");
+    if (!c.sanctionNumber) missing.push("Sanction Number");
+    if (!c.applicationNumber) missing.push("Application Number");
+    if (!c.dateOfApplication) missing.push("Application Date");
+    if (!c.installationDate) missing.push("Installation Date");
+    if (!c.agreementDate) missing.push("Agreement Date");
+    if (!c.inverterMake) missing.push("Inverter Make");
+    if (!c.inverterModel) missing.push("Inverter Model");
+    if (!c.moduleMake) missing.push("Module Make");
+    if (!c.earthingsDetails) missing.push("Earthings Details");
+    if (!c.email) missing.push("Email");
+    if (!c.signatures?.consumerSignature) missing.push("Consumer Signature");
+    if (!c.signatures?.vendorSignature) missing.push("Vendor Signature");
+    if (!c.signatures?.witness2Signature) missing.push("Witness 2 Signature");
+    // Check each module for missing ALMM number or serial number
+    if (c.modules && c.modules.length > 0) {
+      c.modules.forEach((m: any, i: number) => {
+        if (!m.serialNumber) missing.push(`Panel ${i + 1} Serial Number`);
+        if (!m.almmNumber) missing.push(`Panel ${i + 1} ALMM Number`);
+      });
+    }
+    return missing;
+  };
 
   const handleDelete = (id: string, name: string) => {
     setDeleteCandidate({ id, name });
@@ -394,7 +431,32 @@ export default function DashboardClient({ initialConsumers }: { initialConsumers
                   </td>
                   <td style={{ padding: "12px 15px", color: "#cbd5e1", fontSize: "14px" }}>{filteredConsumers.length - ((currentPage - 1) * itemsPerPage + index)}</td>
                   <td style={{ padding: "12px 15px", color: "#cbd5e1", fontSize: "14px" }}>{c.installerName || "N/A"}</td>
-                  <td style={{ padding: "12px 15px", fontWeight: "500", fontSize: "14px", maxWidth: "200px", overflow: "hidden", textOverflow: "ellipsis" }}>{c.consumerName}</td>
+                  <td style={{ padding: "12px 15px", fontWeight: "500", fontSize: "14px", maxWidth: "200px", overflow: "hidden", textOverflow: "ellipsis" }}>
+                    {c.consumerName}
+                    {(() => {
+                      const missing = getMissingFields(c);
+                      if (missing.length === 0) return null;
+                      return (
+                        <span
+                          title={`Missing: ${missing.join(", ")}`}
+                          style={{ 
+                            marginLeft: "6px", 
+                            color: "#f59e0b", 
+                            cursor: "help",
+                            display: "inline-flex",
+                            alignItems: "center",
+                            verticalAlign: "middle",
+                          }}
+                        >
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+                            <line x1="12" y1="9" x2="12" y2="13"></line>
+                            <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                          </svg>
+                        </span>
+                      );
+                    })()}
+                  </td>
                   <td style={{ padding: "12px 15px", color: "#cbd5e1", fontSize: "14px" }}>{c.mobileNumber}</td>
                   <td style={{ padding: "12px 15px", color: "#cbd5e1", fontSize: "14px" }}>{c.dateOfApplication}</td>
                   <td style={{ padding: "12px 15px", display: "flex", gap: "8px", alignItems: "center" }}>
