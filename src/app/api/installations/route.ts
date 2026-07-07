@@ -8,32 +8,32 @@ import { authOptions } from "@/lib/auth";
 // Helper function to decode Base64 and upload to Supabase Bucket
 async function uploadBase64ToBucket(base64Str: string | null, path: string): Promise<string | null> {
   if (!base64Str || !base64Str.startsWith('data:image')) return base64Str;
-  
+
   // Initialize Supabase Client lazily using the Service Role Key (bypasses RLS for uploads)
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "https://placeholder.supabase.co";
   const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || "placeholder";
   const supabase = createClient(supabaseUrl, supabaseKey);
-  
+
   try {
     const matches = base64Str.match(/^data:([A-Za-z-+\/]+);base64,(.+)$/);
     if (!matches || matches.length !== 3) return null;
-    
+
     const mimeType = matches[1];
     const buffer = Buffer.from(matches[2], 'base64');
-    
+
     const { error } = await supabase.storage.from('installation-media').upload(path, buffer, {
       contentType: mimeType,
       upsert: true
     });
-    
+
     if (error) {
       console.error("Supabase Upload Error:", error);
       return null;
     }
-    
+
     const { data: publicUrlData } = supabase.storage.from('installation-media').getPublicUrl(path);
     return publicUrlData.publicUrl;
-  } catch(e) {
+  } catch (e) {
     console.error("Upload exception:", e);
     return null;
   }
@@ -47,7 +47,7 @@ export async function POST(req: Request) {
     }
 
     const data = await req.json();
-    
+
     // Generate a unique prefix for this consumer's files
     const consumerPrefix = `${Date.now()}_${data.consumerNumber || "unknown"}`;
 
@@ -57,7 +57,7 @@ export async function POST(req: Request) {
     const consumerSignature = await uploadBase64ToBucket(data.consumerSignature, `${consumerPrefix}/consumer_sig.png`);
     const vendorSignature = await uploadBase64ToBucket(data.vendorSignature, `${consumerPrefix}/vendor_sig.png`);
     const witness2Signature = await uploadBase64ToBucket(data.witness2Signature, `${consumerPrefix}/witness2_sig.png`);
-    
+
     // Process all panel images concurrently
     const processedModules = await Promise.all((data.modules || []).map(async (m: any, index: number) => {
       const almmUrl = await uploadBase64ToBucket(m.almmImageUrl, `${consumerPrefix}/almm_panel_${index + 1}.jpg`);
@@ -99,14 +99,14 @@ export async function POST(req: Request) {
         agreementDate: data.agreementDate || "",
         location: data.address,
         earthingsDetails: data.earthingsDetails || null,
-        
+
         inverterMake: data.inverterMake,
         inverterModel: data.inverterModel,
         inverterImageUrl: data.inverterImageUrl || null,
         inverterCapacity: parseFloat(data.inverterCapacity),
         capacityOfInverter: data.capacityOfInverter || null,
         inverterYom: parseInt(data.inverterYom),
-        
+
         moduleMake: data.moduleMake,
         moduleCapacity: parseFloat(data.moduleCapacity),
         moduleCapacityKw: data.moduleCapacityKw || null,
@@ -130,7 +130,7 @@ export async function POST(req: Request) {
     console.error("DB Error:", error);
     try {
       require("fs").writeFileSync("backend-error.txt", error.stack || error.message);
-    } catch(e) {}
+    } catch (e) { }
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
