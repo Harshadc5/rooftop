@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
 
-export default function DashboardClient({ initialConsumers }: { initialConsumers: any[] }) {
+export default function DashboardClient({ initialConsumers, role = "ADMIN" }: { initialConsumers: any[], role?: "ADMIN" | "FITTER" }) {
   const [searchTerm, setSearchTerm] = useState("");
   const [installerFilter, setInstallerFilter] = useState("");
   const [selectedConsumer, setSelectedConsumer] = useState<any | null>(null);
@@ -236,7 +236,7 @@ export default function DashboardClient({ initialConsumers }: { initialConsumers
     <div style={{ display: "flex", flexDirection: "column", gap: "25px", width: "100%", overflow: "hidden" }}>
       
       {/* ANALYTICS DASHBOARD SECTION */}
-      {totalInstallations > 0 && (
+      {totalInstallations > 0 && role === "ADMIN" && (
         <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
           
           {/* KPI CARDS */}
@@ -316,30 +316,121 @@ export default function DashboardClient({ initialConsumers }: { initialConsumers
             )}
           </div>
         )}
+      {role === "ADMIN" && (
+        <>
+          {/* ANALYTICS DASHBOARD SECTION */}
+          {totalInstallations > 0 && (
+            <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
+              
+              {/* KPI CARDS */}
+              <div className="responsive-grid-2 animate-fade-in-up stagger-1" style={{ marginBottom: "30px", gap: "20px", display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))" }}>
+                <div className="glass-panel" style={{ padding: "20px", borderLeft: "4px solid #38bdf8" }}>
+                  <div style={{ color: "#94a3b8", fontSize: "14px", fontWeight: "600", textTransform: "uppercase" }}>Total Installations</div>
+                  <div style={{ color: "white", fontSize: "36px", fontWeight: "700", marginTop: "10px" }}>{totalInstallations}</div>
+                </div>
+                <div className="glass-panel" style={{ padding: "20px", borderLeft: "4px solid #10b981" }}>
+                  <div style={{ color: "#94a3b8", fontSize: "14px", fontWeight: "600", textTransform: "uppercase" }}>Total Capacity (KWp)</div>
+                  <div style={{ color: "white", fontSize: "36px", fontWeight: "700", marginTop: "10px" }}>{totalCapacity.toFixed(1)} <span style={{fontSize:"20px", color:"#10b981"}}>KWp</span></div>
+                </div>
+                <div className="glass-panel" style={{ padding: "20px", borderLeft: "4px solid #f59e0b" }}>
+                  <div style={{ color: "#94a3b8", fontSize: "14px", fontWeight: "600", textTransform: "uppercase" }}>Solar Panels Installed</div>
+                  <div style={{ color: "white", fontSize: "36px", fontWeight: "700", marginTop: "10px" }}>{totalPanels}</div>
+                </div>
+              </div>
+
+              {filteredConsumers.length > 0 && (
+                <div className="animate-fade-in-up stagger-2" style={{ marginBottom: "30px", display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: "20px" }}>
+                
+                {/* Chart 1: Districts */}
+                <div className="glass-panel" style={{ padding: "25px" }}>
+                  <h3 style={{ fontSize: "16px", color: "var(--primary)", marginBottom: "20px" }}>Installations by District</h3>
+                  <div style={{ display: "flex", flexDirection: "column", gap: "15px" }}>
+                    {topDistricts.map(item => (
+                      <div key={item.name}>
+                        <div style={{ display: "flex", justifyContent: "space-between", fontSize: "13px", color: "#cbd5e1", marginBottom: "5px" }}>
+                          <span>{item.name}</span>
+                          <span>{item.count}</span>
+                        </div>
+                        <div style={{ width: "100%", height: "8px", background: "rgba(255,255,255,0.1)", borderRadius: "4px", overflow: "hidden" }}>
+                          <div style={{ width: `${item.percentage}%`, height: "100%", background: "#38bdf8", borderRadius: "4px", transition: "width 1s ease-in-out" }}></div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Chart 2: Inverters */}
+                <div className="glass-panel" style={{ padding: "25px" }}>
+                  <h3 style={{ fontSize: "16px", color: "#10b981", marginBottom: "20px" }}>Top Inverter Brands</h3>
+                  <div style={{ display: "flex", flexDirection: "column", gap: "15px" }}>
+                    {topInverters.map(item => (
+                      <div key={item.name}>
+                        <div style={{ display: "flex", justifyContent: "space-between", fontSize: "13px", color: "#cbd5e1", marginBottom: "5px" }}>
+                          <span>{item.name}</span>
+                          <span>{item.count}</span>
+                        </div>
+                        <div style={{ width: "100%", height: "8px", background: "rgba(255,255,255,0.1)", borderRadius: "4px", overflow: "hidden" }}>
+                          <div style={{ width: `${item.percentage}%`, height: "100%", background: "#10b981", borderRadius: "4px", transition: "width 1s ease-in-out" }}></div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Chart 3: Panels */}
+                <div className="glass-panel" style={{ padding: "25px" }}>
+                  <h3 style={{ fontSize: "16px", color: "#f59e0b", marginBottom: "20px" }}>Top Panel Brands</h3>
+                  <div style={{ display: "flex", flexDirection: "column", gap: "15px" }}>
+                    {topPanels.map(item => (
+                      <div key={item.name}>
+                        <div style={{ display: "flex", justifyContent: "space-between", fontSize: "13px", color: "#cbd5e1", marginBottom: "5px" }}>
+                          <span>{item.name}</span>
+                          <span>{item.count}</span>
+                        </div>
+                        <div style={{ width: "100%", height: "8px", background: "rgba(255,255,255,0.1)", borderRadius: "4px", overflow: "hidden" }}>
+                          <div style={{ width: `${item.percentage}%`, height: "100%", background: "#f59e0b", borderRadius: "4px", transition: "width 1s ease-in-out" }}></div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* TABLE HEADER SECTION */}
+          <div className="stack-on-mobile" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px", flexWrap: "wrap", gap: "15px" }}>
+            <div className="stack-on-mobile" style={{ display: "flex", alignItems: "center", gap: "15px" }}>
+              <h2 style={{ fontSize: "20px", color: "var(--primary)", margin: 0 }}>Recent Installations</h2>
+              
+              {/* Entries per page Dropdown */}
+              <select 
+                value={itemsPerPage} 
+                onChange={e => {
+                  setItemsPerPage(Number(e.target.value));
+                  setCurrentPage(1);
+                }}
+                style={{ padding: "8px 12px", borderRadius: "8px", border: "1px solid rgba(255,255,255,0.2)", background: "rgba(255,255,255,0.05)", color: "white", outline: "none" }}
+              >
+                <option value={10} style={{ color: "black" }}>Show 10 entries</option>
+                <option value={25} style={{ color: "black" }}>Show 25 entries</option>
+                <option value={50} style={{ color: "black" }}>Show 50 entries</option>
+                <option value={100000} style={{ color: "black" }}>Show All</option>
+              </select>
+            </div>
+          </div>
+        </>
+      )}
 
       {/* EXISTING TABLE SECTION */}
       <div className="glass-panel animate-fade-in-up stagger-3" style={{ background: "rgba(0, 0, 0, 0.85)", padding: "25px", width: "100%", overflowX: "hidden" }}>
       <div className="stack-on-mobile" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px", flexWrap: "wrap", gap: "15px" }}>
         <div className="stack-on-mobile" style={{ display: "flex", alignItems: "center", gap: "15px" }}>
-          <h2 style={{ fontSize: "20px", color: "var(--primary)", margin: 0 }}>Recent Installations</h2>
-          
-          {/* Entries per page Dropdown */}
-          <select 
-            value={itemsPerPage} 
-            onChange={e => {
-              setItemsPerPage(Number(e.target.value));
-              setCurrentPage(1);
-            }}
-            style={{ padding: "8px 12px", borderRadius: "8px", border: "1px solid rgba(255,255,255,0.2)", background: "rgba(255,255,255,0.05)", color: "white", outline: "none" }}
-          >
-            <option value={10} style={{ color: "black" }}>Show 10 entries</option>
-            <option value={25} style={{ color: "black" }}>Show 25 entries</option>
-            <option value={50} style={{ color: "black" }}>Show 50 entries</option>
-            <option value={100000} style={{ color: "black" }}>Show All</option>
-          </select>
           
           {/* Bulk Delete Button */}
-          {selectedIds.size > 0 && (
+          {selectedIds.size > 0 && role === "ADMIN" && (
             <button 
               onClick={handleBulkDelete}
               style={{ padding: "8px 15px", borderRadius: "8px", border: "none", background: "#ef4444", color: "white", cursor: "pointer", fontWeight: "600" }}
@@ -348,29 +439,33 @@ export default function DashboardClient({ initialConsumers }: { initialConsumers
             </button>
           )}
 
-          <button 
-            onClick={exportToCSV}
-            style={{ padding: "8px 15px", borderRadius: "8px", border: "none", background: "#10b981", color: "white", cursor: "pointer", fontWeight: "600", display: "flex", alignItems: "center", gap: "6px" }}
-          >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
-            Export to CSV
-          </button>
+          {role === "ADMIN" && (
+            <button 
+              onClick={exportToCSV}
+              style={{ padding: "8px 15px", borderRadius: "8px", border: "none", background: "#10b981", color: "white", cursor: "pointer", fontWeight: "600", display: "flex", alignItems: "center", gap: "6px" }}
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+              Export to CSV
+            </button>
+          )}
         </div>
         
         <div style={{ display: "flex", gap: "15px", width: "100%", maxWidth: "500px" }}>
-          <select
-            value={installerFilter}
-            onChange={e => {
-              setInstallerFilter(e.target.value);
-              setCurrentPage(1);
-            }}
-            style={{ flex: 1, padding: "10px 15px", borderRadius: "8px", border: "1px solid rgba(255,255,255,0.2)", background: "rgba(255,255,255,0.05)", color: "white", outline: "none" }}
-          >
-            <option value="" style={{ color: "black" }}>All Installers</option>
-            {uniqueInstallers.map(installer => (
-              <option key={installer} value={installer} style={{ color: "black" }}>{installer}</option>
-            ))}
-          </select>
+          {role === "ADMIN" && (
+            <select
+              value={installerFilter}
+              onChange={e => {
+                setInstallerFilter(e.target.value);
+                setCurrentPage(1);
+              }}
+              style={{ flex: 1, padding: "10px 15px", borderRadius: "8px", border: "1px solid rgba(255,255,255,0.2)", background: "rgba(255,255,255,0.05)", color: "white", outline: "none" }}
+            >
+              <option value="" style={{ color: "black" }}>All Installers</option>
+              {uniqueInstallers.map(installer => (
+                <option key={installer} value={installer} style={{ color: "black" }}>{installer}</option>
+              ))}
+            </select>
+          )}
           <input 
             type="text" 
             placeholder="Search consumers..." 
@@ -393,14 +488,16 @@ export default function DashboardClient({ initialConsumers }: { initialConsumers
           <table style={{ width: "100%", borderCollapse: "collapse", textAlign: "left" }}>
             <thead>
               <tr style={{ borderBottom: "1px solid rgba(255,255,255,0.2)" }}>
-                <th style={{ padding: "12px 15px", width: "40px" }}>
-                  <input 
-                    type="checkbox" 
-                    checked={paginatedConsumers.length > 0 && selectedIds.size === paginatedConsumers.length}
-                    onChange={toggleSelectAll}
-                    style={{ cursor: "pointer", width: "16px", height: "16px" }}
-                  />
-                </th>
+                {role === "ADMIN" && (
+                  <th style={{ padding: "12px 15px", width: "40px" }}>
+                    <input 
+                      type="checkbox" 
+                      checked={paginatedConsumers.length > 0 && selectedIds.size === paginatedConsumers.length}
+                      onChange={toggleSelectAll}
+                      style={{ cursor: "pointer", width: "16px", height: "16px" }}
+                    />
+                  </th>
+                )}
                 <th style={{ padding: "12px 15px", color: "#94a3b8" }}>S.No.</th>
                 <th style={{ padding: "12px 15px", color: "#94a3b8" }}>Installer</th>
                 <th style={{ padding: "12px 15px", color: "#94a3b8" }}>Consumer Name</th>
@@ -412,14 +509,16 @@ export default function DashboardClient({ initialConsumers }: { initialConsumers
             <tbody>
               {paginatedConsumers.map((c, index) => (
                 <tr key={c.id} className="table-row-hover" style={{ borderBottom: "1px solid rgba(255,255,255,0.1)", whiteSpace: "nowrap", background: selectedIds.has(c.id) ? "rgba(239,68,68,0.1)" : "transparent" }}>
-                  <td style={{ padding: "12px 15px" }}>
-                    <input 
-                      type="checkbox" 
-                      checked={selectedIds.has(c.id)}
-                      onChange={() => toggleSelection(c.id)}
-                      style={{ cursor: "pointer", width: "16px", height: "16px" }}
-                    />
-                  </td>
+                  {role === "ADMIN" && (
+                    <td style={{ padding: "12px 15px" }}>
+                      <input 
+                        type="checkbox" 
+                        checked={selectedIds.has(c.id)}
+                        onChange={() => toggleSelection(c.id)}
+                        style={{ cursor: "pointer", width: "16px", height: "16px" }}
+                      />
+                    </td>
+                  )}
                   <td style={{ padding: "12px 15px", color: "#cbd5e1", fontSize: "14px" }}>{filteredConsumers.length - ((currentPage - 1) * itemsPerPage + index)}</td>
                   <td style={{ padding: "12px 15px", color: "#cbd5e1", fontSize: "14px" }}>{c.installerName || "N/A"}</td>
                   <td style={{ padding: "12px 15px", fontWeight: "500", fontSize: "14px", maxWidth: "200px", overflow: "hidden", textOverflow: "ellipsis" }}>
@@ -451,22 +550,30 @@ export default function DashboardClient({ initialConsumers }: { initialConsumers
                   <td style={{ padding: "12px 15px", color: "#cbd5e1", fontSize: "14px" }}>{c.mobileNumber}</td>
                   <td style={{ padding: "12px 15px", color: "#cbd5e1", fontSize: "14px" }}>{c.dateOfApplication}</td>
                   <td style={{ padding: "12px 15px", display: "flex", gap: "8px", alignItems: "center" }}>
-                    <a href={`/api/generate/${c.id}/WCR`} className="btn-primary" style={{ padding: "6px 10px", fontSize: "12px", textDecoration: "none", background: "#3b82f6", borderRadius: "4px" }}>WCR</a>
-                    <a href={`/api/generate/${c.id}/ANNEXURE_1`} className="btn-primary" style={{ padding: "6px 10px", fontSize: "12px", textDecoration: "none", background: "#10b981", borderRadius: "4px" }}>Anx 1</a>
-                    <a href={`/api/generate/${c.id}/DCR`} className="btn-primary" style={{ padding: "6px 10px", fontSize: "12px", textDecoration: "none", background: "#f59e0b", borderRadius: "4px" }}>DCR</a>
-                    <a href={`/api/generate/${c.id}/AGREEMENT`} className="btn-primary" style={{ padding: "6px 10px", fontSize: "12px", textDecoration: "none", background: "#6366f1", borderRadius: "4px" }}>Agrmt</a>
-                    {c.geoTaggedPhotoUrl && (
-                      <a href={`/api/installations/${c.id}/geophoto`} className="btn-primary" style={{ padding: "6px 10px", fontSize: "12px", textDecoration: "none", background: "#ec4899", borderRadius: "4px" }}>GeoPhoto</a>
+                    {role === "ADMIN" && (
+                      <>
+                        <a href={`/api/generate/${c.id}/WCR`} className="btn-primary" style={{ padding: "6px 10px", fontSize: "12px", textDecoration: "none", background: "#3b82f6", borderRadius: "4px" }}>WCR</a>
+                        <a href={`/api/generate/${c.id}/ANNEXURE_1`} className="btn-primary" style={{ padding: "6px 10px", fontSize: "12px", textDecoration: "none", background: "#10b981", borderRadius: "4px" }}>Anx 1</a>
+                        <a href={`/api/generate/${c.id}/DCR`} className="btn-primary" style={{ padding: "6px 10px", fontSize: "12px", textDecoration: "none", background: "#f59e0b", borderRadius: "4px" }}>DCR</a>
+                        <a href={`/api/generate/${c.id}/AGREEMENT`} className="btn-primary" style={{ padding: "6px 10px", fontSize: "12px", textDecoration: "none", background: "#6366f1", borderRadius: "4px" }}>Agrmt</a>
+                        {c.geoTaggedPhotoUrl && (
+                          <a href={`/api/installations/${c.id}/geophoto`} className="btn-primary" style={{ padding: "6px 10px", fontSize: "12px", textDecoration: "none", background: "#ec4899", borderRadius: "4px" }}>GeoPhoto</a>
+                        )}
+                      </>
                     )}
                     <button onClick={() => setSelectedConsumer(c)} style={{ background: "none", border: "none", cursor: "pointer", color: "#94a3b8", display: "flex", alignItems: "center", padding: "4px" }} title="View All Details">
                       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
                     </button>
-                    <button onClick={() => window.location.href = `/dashboard/edit/${c.id}`} style={{ background: "none", border: "none", cursor: "pointer", color: "#38bdf8", display: "flex", alignItems: "center", padding: "4px" }} title="Edit Record">
-                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
-                    </button>
-                    <button onClick={() => handleDelete(c.id, c.consumerName)} style={{ background: "none", border: "none", cursor: "pointer", color: "#ef4444", display: "flex", alignItems: "center", padding: "4px" }} title="Delete Record">
-                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
-                    </button>
+                    {role === "ADMIN" && (
+                      <button onClick={() => window.location.href = `/dashboard/edit/${c.id}`} style={{ background: "none", border: "none", cursor: "pointer", color: "#38bdf8", display: "flex", alignItems: "center", padding: "4px" }} title="Edit Record">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                      </button>
+                    )}
+                    {role === "ADMIN" && (
+                      <button onClick={() => handleDelete(c.id, c.consumerName)} style={{ background: "none", border: "none", cursor: "pointer", color: "#ef4444", display: "flex", alignItems: "center", padding: "4px" }} title="Delete Record">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
+                      </button>
+                    )}
                   </td>
                 </tr>
               ))}
