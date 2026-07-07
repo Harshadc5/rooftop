@@ -138,23 +138,14 @@ export default function DashboardClient({ initialConsumers }: { initialConsumers
     initialConsumers.forEach(c => {
       let val = c[field];
 
-      if (field === "district" && c.address) {
-        // Extract district from Complete Address (e.g., "..., Pune, Maharashtra 411014, India")
-        const parts = c.address.split(',').map((p: string) => p.trim()).filter(Boolean);
-        let len = parts.length;
-        if (len > 0 && parts[len - 1].toLowerCase() === 'india') {
-          parts.pop();
-          len--;
-        }
-        if (len >= 2) {
-          val = parts[len - 2]; // Usually the City/District
-        } else if (len === 1) {
-          val = parts[0];
-        }
-        if (val) val = val.replace(/[0-9]/g, '').trim(); // Remove any stray zip codes
+      // Normalize casing and spacing (e.g. "Warry " and "warry" become "Warry")
+      if (typeof val === 'string' && val.trim() !== "") {
+        val = val.trim().toLowerCase().replace(/\s+/g, ' ');
+        val = val.split(' ').map((word: string) => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+      } else {
+        val = "Unknown";
       }
 
-      val = val || c[field] || "Unknown";
       counts[val] = (counts[val] || 0) + 1;
     });
     return Object.entries(counts)
