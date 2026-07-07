@@ -12,6 +12,7 @@ import os from "os";
 
 const execAsync = promisify(exec);
 
+export const dynamic = "force-dynamic";
 
 // Helper function to fetch HTTP images and convert them to Base64 strings for docxtemplater
 async function fetchImageBuffer(url: string | null | undefined): Promise<string> {
