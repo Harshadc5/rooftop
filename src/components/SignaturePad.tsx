@@ -17,6 +17,7 @@ export default function SignaturePad({ title, onUpdate }: Props) {
   const isDrawingRef = useRef(false);
   const pointsRef = useRef<Point[]>([]);
   const lastVelocityRef = useRef(0);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [isEmpty, setIsEmpty] = useState(true);
 
   // --- Setup canvas at correct device pixel ratio ---
@@ -189,9 +190,54 @@ export default function SignaturePad({ title, onUpdate }: Props) {
     onUpdate("");
   }, [onUpdate]);
 
+  // --- Handle File Upload ---
+  const handleFileUpload = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const img = new window.Image();
+      img.onload = () => {
+        const canvas = canvasRef.current;
+        if (!canvas) return;
+        const ctx = canvas.getContext("2d");
+        if (!ctx) return;
+        
+        // Clear canvas first
+        clear();
+        
+        // Draw image onto canvas
+        const dpr = window.devicePixelRatio || 1;
+        const rect = canvas.getBoundingClientRect();
+        
+        // Calculate scaling to fit image inside canvas while maintaining aspect ratio
+        const scale = Math.min(rect.width / img.width, rect.height / img.height);
+        const drawW = img.width * scale;
+        const drawH = img.height * scale;
+        const offsetX = (rect.width - drawW) / 2;
+        const offsetY = (rect.height - drawH) / 2;
+        
+        ctx.setTransform(1, 0, 0, 1, 0, 0);
+        ctx.scale(dpr, dpr);
+        ctx.drawImage(img, offsetX, offsetY, drawW, drawH);
+        
+        setIsEmpty(false);
+        onUpdate(canvas.toDataURL("image/png"));
+        
+        // Reset file input
+        if (fileInputRef.current) fileInputRef.current.value = "";
+      };
+      img.src = event.target?.result as string;
+    };
+    reader.readAsDataURL(file);
+  }, [clear, onUpdate]);
+
   return (
     <div style={{ width: "100%" }}>
-      <label className="form-label" style={{ color: "#ffffff" }}>{title}</label>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <label className="form-label" style={{ color: "#ffffff", marginBottom: "8px" }}>{title}</label>
+      </div>
 
       <div
         style={{
@@ -248,25 +294,55 @@ export default function SignaturePad({ title, onUpdate }: Props) {
       </div>
 
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "8px" }}>
-        <button
-          type="button"
-          onClick={clear}
-          style={{
-            padding: "6px 16px",
-            fontSize: "13px",
-            borderRadius: "6px",
-            border: "1px solid #94a3b8",
-            background: "#f8fafc",
-            color: "#475569",
-            cursor: "pointer",
-            fontWeight: "600",
-            display: "flex",
-            alignItems: "center",
-            gap: "5px",
-          }}
-        >
-          ↺ Clear Signature
-        </button>
+        <div style={{ display: "flex", gap: "10px" }}>
+          <button
+            type="button"
+            onClick={clear}
+            style={{
+              padding: "6px 16px",
+              fontSize: "13px",
+              borderRadius: "6px",
+              border: "1px solid #94a3b8",
+              background: "#f8fafc",
+              color: "#475569",
+              cursor: "pointer",
+              fontWeight: "600",
+              display: "flex",
+              alignItems: "center",
+              gap: "5px",
+            }}
+          >
+            ↺ Clear Signature
+          </button>
+          
+          <button
+            type="button"
+            onClick={() => fileInputRef.current?.click()}
+            style={{
+              padding: "6px 16px",
+              fontSize: "13px",
+              borderRadius: "6px",
+              border: "none",
+              background: "#3b82f6",
+              color: "white",
+              cursor: "pointer",
+              fontWeight: "600",
+              display: "flex",
+              alignItems: "center",
+              gap: "5px",
+            }}
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+            Upload Photo
+          </button>
+          <input
+            type="file"
+            ref={fileInputRef}
+            onChange={handleFileUpload}
+            accept="image/*"
+            style={{ display: "none" }}
+          />
+        </div>
         {!isEmpty && (
           <span style={{ fontSize: "12px", color: "#10b981", fontWeight: "600" }}>
             ✓ Signed

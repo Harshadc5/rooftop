@@ -138,9 +138,9 @@ export default function DashboardClient({ initialConsumers, role = "ADMIN" }: { 
     initialConsumers.forEach(c => {
       let val = c[field];
 
-      // Smart fallback for district
-      if (field === 'district' && (!val || typeof val !== 'string' || val.trim() === "")) {
-        const fullAddress = `${c.address || ""} ${c.city || ""} ${c.state || ""}`.toLowerCase();
+      // Smart fallback and normalization for district
+      if (field === 'district') {
+        const fullAddress = `${val || ""} ${c.address || ""} ${c.city || ""} ${c.state || ""}`.toLowerCase();
         
         // Try to extract known districts from Maharashtra/India
         const knownDistricts = ["nashik", "mumbai", "pune", "thane", "nagpur", "dhule", "jalgaon", "ahmednagar", "satara", "sangli", "kolhapur", "solapur", "aurangabad", "palghar", "raigad", "ratnagiri", "sindhudurg", "nandurbar", "amravati", "akola", "bhandara", "buldhana", "chandrapur", "gondia", "gadchiroli", "hingoli", "jalna", "latur", "nanded", "osmanabad", "parbhani", "wardha", "washim", "yavatmal"];
@@ -153,13 +153,19 @@ export default function DashboardClient({ initialConsumers, role = "ADMIN" }: { 
           }
         }
         
-        // If we found one in the address/city, use it. Otherwise try to use the raw city. Otherwise, Unknown.
+        // If we found a known district anywhere, use only its pure name
         if (foundDistrict) {
           val = foundDistrict;
-        } else if (c.city && typeof c.city === 'string' && c.city.trim() !== "") {
-          val = c.city;
         } else {
-          val = "Unknown";
+          // Otherwise, clean up the existing value by stripping generic suffixes
+          if (val && typeof val === 'string' && val.trim() !== "") {
+            val = val.toLowerCase().replace(/district/g, '').replace(/division/g, '').trim();
+            if (val === "") val = "Unknown";
+          } else if (c.city && typeof c.city === 'string' && c.city.trim() !== "") {
+            val = c.city;
+          } else {
+            val = "Unknown";
+          }
         }
       } else if (!val || typeof val !== 'string' || val.trim() === "") {
         val = "Unknown";
