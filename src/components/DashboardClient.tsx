@@ -138,12 +138,37 @@ export default function DashboardClient({ initialConsumers, role = "ADMIN" }: { 
     initialConsumers.forEach(c => {
       let val = c[field];
 
-      // Normalize casing and spacing (e.g. "Warry " and "warry" become "Warry")
-      if (typeof val === 'string' && val.trim() !== "") {
+      // Smart fallback for district
+      if (field === 'district' && (!val || typeof val !== 'string' || val.trim() === "")) {
+        const fullAddress = `${c.address || ""} ${c.city || ""} ${c.state || ""}`.toLowerCase();
+        
+        // Try to extract known districts from Maharashtra/India
+        const knownDistricts = ["nashik", "mumbai", "pune", "thane", "nagpur", "dhule", "jalgaon", "ahmednagar", "satara", "sangli", "kolhapur", "solapur", "aurangabad", "palghar", "raigad", "ratnagiri", "sindhudurg", "nandurbar", "amravati", "akola", "bhandara", "buldhana", "chandrapur", "gondia", "gadchiroli", "hingoli", "jalna", "latur", "nanded", "osmanabad", "parbhani", "wardha", "washim", "yavatmal"];
+        let foundDistrict = "";
+        
+        for (const kd of knownDistricts) {
+          if (fullAddress.includes(kd)) {
+            foundDistrict = kd;
+            break;
+          }
+        }
+        
+        // If we found one in the address/city, use it. Otherwise try to use the raw city. Otherwise, Unknown.
+        if (foundDistrict) {
+          val = foundDistrict;
+        } else if (c.city && typeof c.city === 'string' && c.city.trim() !== "") {
+          val = c.city;
+        } else {
+          val = "Unknown";
+        }
+      } else if (!val || typeof val !== 'string' || val.trim() === "") {
+        val = "Unknown";
+      }
+
+      // Normalize casing and spacing
+      if (val !== "Unknown") {
         val = val.trim().toLowerCase().replace(/\s+/g, ' ');
         val = val.split(' ').map((word: string) => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
-      } else {
-        val = "Unknown";
       }
 
       counts[val] = (counts[val] || 0) + 1;
